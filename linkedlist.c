@@ -4,77 +4,82 @@
 struct node *head;
 struct node *last;
 
-struct node* createlist(void* val) {
-	struct node *n = (struct node*) malloc(sizeof(struct node));
+struct linked_list* createlist(void* val) {
 
-	n->val = val;
-	n->next = NULL;
+	struct linked_list *list = (struct linked_list*) malloc(
+			sizeof(struct linked_list));
+	struct node *first_node = (struct node*) malloc(sizeof(struct node));
 
-	head = n;
-	last = n;
+	first_node->val = val;
+	first_node->next = NULL;
 
-	return n;
+	list->head = first_node;
+	list->last = first_node;
+	list->length++;
+	return list;
 }
 
-struct node* addnode(void* val, bool addtoend) {
+struct linked_list* addnode(linked_list* list, void* val, bool addtoend) {
 
 	//Es el primero
-	if (NULL == head) {
+	if (list->head == NULL) {
+		//printf("Adding first element");
 		return (createlist(val));
 	}
 
-	struct node *n = (struct node*) malloc(sizeof(struct node));
+	struct node* new_node = (struct node*) malloc(sizeof(struct node));
 
-	n->val = val;
-	n->next = NULL;
+	new_node->val = val;
+	new_node->next = NULL;
 
 	if (addtoend) {
-		last->next = n;
-		last = n;
+		//printf("Adding to end");
+		(list->last)->next = new_node;
+		list->last = new_node;
 	} else {
-		n->next = head;
-		head = n;
+		//printf("Adding to beggining");
+		new_node->next = list->head;
+		list->head = new_node;
 	}
-	return n;
+	list->length++;
+	return list;
 }
 
-void removelastnode() {
+void removelastnode(linked_list* list) {
 
 	struct node *current = (struct node*) malloc(sizeof(struct node));
 	struct node *prev = (struct node*) malloc(sizeof(struct node));
 
-	current = head;
+	current = list->head;
 
-	if (current != NULL && current->next != NULL ) {
+	if (current != NULL && current->next != NULL) {
 		prev = current;
 		current = current->next;
 
-		while (current->next != NULL ) {
+		while (current->next != NULL) {
 			prev = current;
 			current = current->next;
 		}
+		prev->next = NULL;
+		list->last = prev;
 	} else {
-		//hay un solo elemento o ninguno
-		head = last = NULL;
-		free(current);
+		//Hay un solo elemento o ninguno
+		list->head = list->last = NULL;
 		free(prev);
-		return;
 	}
-	prev->next = NULL;
-	last = prev;
+	list->length--;
 	free(current);
-	//free(prev);
 }
 
-void removenode(struct node* n) {
+void removenode(linked_list* list, struct node* n) {
 
 }
 
-struct node* search(void* val) {
+struct node* search(linked_list* list, void* val) {
 
 	struct node *n = (struct node*) malloc(sizeof(struct node));
 
-	n = head;
+	n = list->head;
 
 	do {
 		if (n->val == val) {
@@ -82,21 +87,21 @@ struct node* search(void* val) {
 		} else {
 			n = head->next;
 		}
-	} while (n != NULL );
+	} while (n != NULL);
 	return n;
 }
 
-void printlist() {
+void printlist(linked_list* list) {
 
 	struct node *current = (struct node*) malloc(sizeof(struct node));
 
-	current = head;
+	current = list->head;
 
-	while (current != NULL ) {
-		printf("%d", current->val);
+	while (current != NULL) {
+		printf("%d", current->val); //TODO edit for generic printout
 		printf("->");
-		if (current->next == NULL ) {
-			printf("NULL");
+		if (current->next == NULL) {
+			printf("NULL\n");
 			return;
 		} else {
 			current = current->next;

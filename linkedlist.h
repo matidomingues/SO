@@ -1,25 +1,29 @@
 #ifndef _LINKEDLIST_H_
 #define _LINKEDLIST_H_
-extern struct node *head;
-extern struct node *last;
 #endif
 
 #include <stdio.h>
 #include <stdbool.h>
+
+typedef struct linked_list {
+	struct node* head;
+	struct node* last;
+	int length;
+} linked_list;
 
 typedef struct node {
 	void* val;
 	struct node* next;
 } node;
 
-struct node* createlist(void*);
+struct linked_list* createlist(void*);
 
-struct node* addnode(void*, bool);
+struct linked_list* addnode(struct linked_list*, void*, bool);
 
-void removelastnode();
+void removelastnode(struct linked_list*);
 
-void removenode(struct node*);
+void removenode(struct linked_list*, struct node*);
 
-struct node* search(void*);
+struct node* search(struct linked_list*, void*);
 
-void printlist();
+void printlist(struct linked_list*);

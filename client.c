@@ -37,41 +37,46 @@ char* createPipe(){
 	return route;
 }
 
-void sendData(FILE* fd, char* route){
+void sendData(int fd, char* route){
 	int status;
 	Message* msg = prepareMessage();
 	msg = fillMessageData(msg, "register", "login", getpid(), "");
 
 	printf("paso\n");
 
-	while ((status = fwrite(msg, sizeof(Message), 1, fd)) == 0);
+	while ((status = write(fd, msg, sizeof(Message))) == 0){
+		printf("paso2\n");
+	}
 	if(status == -1){
 		printf("ERROR ON PIPE");
 	}else{
+		close(fd);
 		printf("wrote");
 	}
 }
 
-void listenForConnection(FILE* fd2){
+void listenForConnection(int fd){
 	int status = 0;
-	char test[6];
-	while ((status = fread(test,6,1,fd2)) == 0);
+	Message* msg = malloc(sizeof(Message));
+	while ((status = read(fd, msg, sizeof(Message))) == 0);
 	if(status == -1){
-		printf("ERROR ON PIPE");
+		perror("read");
 	}else{
-		printf("%s\n", test);
+		printf("New Message\n");
 	}
 }
 
 int main() {
-	FILE* fd, fd2;
+	int fd, fd2;
 	char* route; 
 	route = createPipe(); 
 	printf("%s\n", route);
-	fd2 = fopen((char*)route, "r");
-	
-	fd = fopen("/tmp/serv.xxxxx", "w+b");
+	fd = open("/tmp/serv.xxxxx", O_WRONLY | O_NONBLOCK);
+	fd2 = open(route, O_RDONLY | O_NONBLOCK);
 	sendData(fd, route);
-	//listenForConnection(fd2);
+	//while(1){
+		//listenForConnection(fd2);
+		//sendData(fd,route);
+	//}
 	return 1;
 }

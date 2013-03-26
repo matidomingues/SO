@@ -71,10 +71,10 @@ Message* fillMessageData(Message* msg, char* method, char* resource, int referer
 
 }
 
-void listenForConnection(FILE* fd){
+void listenForConnection(int fd){
 	int status = 0;
 	Message* info = malloc(sizeof(Message));
-	while ((status = fread(info, sizeof(Message), 1, fd)) == 0);
+	while ((status = read(fd, info, sizeof(Message))) == 0);
 	if(status == -1){
 		//perror("read");
 	}else{
@@ -99,7 +99,7 @@ char* getFullPath(int id){
 
 void registerClient(int referer){
 	char* route = getFullPath(referer);
-	FILE* fd = fopen(route,"w+b");
+	int fd = open(route, O_WRONLY | O_NONBLOCK);
 	Client* client = newClientNode();
 	client->pid = referer;
 	client->fd = fd;
@@ -107,14 +107,14 @@ void registerClient(int referer){
 	clients = client;
 }
 
-FILE* getClientFile(int pid){
+int getClientFile(int pid){
 	Client* aux = clients;
 	while(aux != NULL){
 		if(aux->pid == pid){
 			return aux->fd;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 void executeActions(){
@@ -129,23 +129,24 @@ void executeActions(){
 }
 
 void writeResponse(int referer, Message* msg){
-	FILE* fd = getClientFile(referer);
+	int fd = getClientFile(referer);
 	int status = 0;
-	while((status = fwrite(msg, sizeof(Message), 1, fd))<=0);
+	while((status = write(fd, msg, sizeof(Message)))<=0);
 	if(status > 0){
 		printf("Wrote Successfully\n");
 	}
 }
 
 int main() {
-	FILE* fd;
+	int fd;
 	head = tail = NULL;
 	clients = NULL;
 	createBasePipe();
-	fd = fopen("/tmp/serv.xxxxx", "r+b");
+	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	printf("Listening on: /tmp/serv.xxxxx\n");
 	while(1){
 		listenForConnection(fd);
+		printf("here");
 		executeActions();
 	}
 	return 1;

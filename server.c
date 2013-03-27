@@ -74,10 +74,11 @@ Message* fillMessageData(Message* msg, char* method, char* resource, int referer
 void listenForConnection(int fd){
 	int status = 0;
 	Message* info = malloc(sizeof(Message));
-	while ((status = read(fd, info, sizeof(Message))) == 0);
-	if(status == -1){
+	status = read(fd, info, sizeof(Message));
+	if(status <= 0){
+		free(info);
 		//perror("read");
-	}else{
+	}else if(status >=1){
 		printf("Recieved:\n");
 		printf("Protocol: %s\n", info->protocol);
 		printf("Method: %s\n", info->method);
@@ -97,6 +98,20 @@ char* getFullPath(int id){
 	return route;
 }
 
+void sendData(int fd, char* route){
+	int status;
+	Message* msg = prepareMessage();
+	msg = fillMessageData(msg, "register", "login", getpid(), "");
+	while ((status = write(fd, msg, sizeof(Message))) == 0){
+		printf("paso2\n");
+	}
+	if(status == -1){
+		printf("ERROR ON PIPE write");
+	}else{
+		printf("wrote");
+	}
+}
+
 void registerClient(int referer){
 	char* route = getFullPath(referer);
 	int fd = open(route, O_WRONLY | O_NONBLOCK);
@@ -105,6 +120,8 @@ void registerClient(int referer){
 	client->fd = fd;
 	client->next = clients;
 	clients = client;
+	printf("Registering client %d\n", referer);
+	sendData(fd, route);
 }
 
 int getClientFile(int pid){
@@ -146,7 +163,6 @@ int main() {
 	printf("Listening on: /tmp/serv.xxxxx\n");
 	while(1){
 		listenForConnection(fd);
-		printf("here");
 		executeActions();
 	}
 	return 1;

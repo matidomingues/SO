@@ -41,28 +41,31 @@ void sendData(int fd, char* route){
 	int status;
 	Message* msg = prepareMessage();
 	msg = fillMessageData(msg, "register", "login", getpid(), "");
-
-	printf("paso\n");
-
 	while ((status = write(fd, msg, sizeof(Message))) == 0){
 		printf("paso2\n");
 	}
 	if(status == -1){
-		printf("ERROR ON PIPE");
+		printf("ERROR ON PIPE write");
 	}else{
-		close(fd);
 		printf("wrote");
 	}
+	free(msg);
 }
 
 void listenForConnection(int fd){
 	int status = 0;
 	Message* msg = malloc(sizeof(Message));
-	while ((status = read(fd, msg, sizeof(Message))) == 0);
+	status = read(fd, msg, sizeof(Message));
 	if(status == -1){
-		perror("read");
-	}else{
-		printf("New Message\n");
+		free(msg);
+		//perror("read");
+	}else if(status >=1){
+		printf("Recieved:\n");
+		printf("Protocol: %s\n", msg->protocol);
+		printf("Method: %s\n", msg->method);
+		printf("Resource: %s\n", msg->resource);
+		printf("Referer: %i\n", msg->referer);
+		printf("Body: %s\n", msg->body);
 	}
 }
 
@@ -74,9 +77,9 @@ int main() {
 	fd = open("/tmp/serv.xxxxx", O_WRONLY | O_NONBLOCK);
 	fd2 = open(route, O_RDONLY | O_NONBLOCK);
 	sendData(fd, route);
-	//while(1){
-		//listenForConnection(fd2);
+	while(1){
+		listenForConnection(fd2);
 		//sendData(fd,route);
-	//}
+	}
 	return 1;
 }

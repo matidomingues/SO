@@ -35,9 +35,9 @@ void init_userlist(const char* filename, struct linked_list* userlist) {
 		u->password = malloc(sizeof(arr[1]));
 		strcpy(u->password, arr[1]);
 
-		u->registration_date = atof(arr[2]); //TODO: Change to time
-		u->modification_date = atof(arr[3]); //TODO: Change to time
-		u->tarifa = atof(arr[4]); //TODO: Change to time
+		u->registration_date = arr[2]; //TODO: Use POSIX strptime
+		u->modification_date = arr[3]; //TODO: Use POSIX strptime
+		u->tarifa = atof(arr[4]);
 
 		addnode(userlist, u, 1);
 	}

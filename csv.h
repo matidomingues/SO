@@ -2,15 +2,21 @@
 #define _CSV_H_
 #endif
 
+#include "user.h"
+#include "linkedlist.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define MAXLINELEN 1024	/* Maximum line length */
-#define MAXFLDS 20		/* Maximum number of fields */
+#define MAXFLDS 5		/* Maximum number of fields */
 #define MAXFLDLEN 24	/* Longest field + 1 = 31 byte field */
 
 /****************************************************/
-/* void parseline()										*/
+/* void parseline()									*/
 /* Splits line into fields, as delimited by 'delim 	*/
 /****************************************************/
-void parseline(char *line, char *delim, char arr[][MAXFLDLEN], int *fldcnt);
+void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
+		int *fieldcount);
 
-
-int interpret();
+void init_userlist(const char* filename, struct linked_list* userlist);

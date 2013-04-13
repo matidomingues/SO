@@ -18,6 +18,10 @@
 *.out
 *.app
 
-app 
+# App 
 bin
 
+# Eclipse
+.project
+.cproject
+.settings

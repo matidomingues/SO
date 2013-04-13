@@ -10,8 +10,15 @@
 *.so
 *.so.*
 *.dylib
+*.dSYM
+.DS_Store
 
 # Executables
 *.exe
 *.out
 *.app
+
+#app
+client
+server
+

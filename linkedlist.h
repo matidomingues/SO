@@ -1,44 +1,47 @@
 #ifndef _LINKEDLIST_H_
 #define _LINKEDLIST_H_
-#endif
 
 #include <stdio.h>
 #include <stdbool.h>
 
-typedef struct linked_list {
-	struct node* head;
-	struct node* last;
-	int length;
-} linked_list;
-
-typedef struct node {
+typedef struct _node {
 	void* val;
-	struct node* next;
-} node;
+	struct _node * next;
+}node;
+
+typedef struct _linked_list {
+	struct _node * head;
+	struct _node * last;
+	int length;
+}linked_list;
 
 /*Crea una lista*/
-struct linked_list* createlist(void*);
+linked_list* createList(void* val);
 
 /*Agrega un elemento*/
-void addnode(struct linked_list*, void*, bool);
+void addNode(linked_list* list, void* val, bool addtoend);
 
 /*Remueve el primer elemento*/
-void removefirstnode(struct linked_list*);
+void removefirstnode(linked_list* list);
 
 /*Remueve el ultimo elemento*/
-void removelastnode(struct linked_list*);
+void removelastnode(linked_list* list);
 
 /*Remueve un elemento*/
-void removenode(struct linked_list*, struct node*);
+void removenode(linked_list* list, node* n);
 
 /*Busca un elemento y lo devuelve*/
-struct node* search(struct linked_list*, void*);
+node* search(linked_list* list, void* val);
 
 /*Indica si la lista se encuentra vacia*/
-bool isempty(struct linked_list*);
+bool isempty(linked_list* list);
 
 /*Imprime la lista en la salida estandar*/
-void printlist(struct linked_list*);
+void printlist(linked_list* list);
 
 /*Devuelve la longitud de la lista*/
-int length(struct linked_list*);
+int length(linked_list* list);
+
+#endif
+
+

@@ -14,7 +14,7 @@
 int status = 0;
 int sender;
 int fd;
-char[7] username;
+char username[7];
 
 Message* prepareMessage(){
 	Message* info = (Message*) malloc(sizeof(Message)); 
@@ -42,7 +42,7 @@ char* createPipe(){
 	return route;
 }
 
-void sendData(char* method, char* resource, char* body){
+void sendData(char* resource, char* method, char* body){
 	int status;
 	Message* msg = prepareMessage();
 	msg = fillMessageData(msg, method, resource, body);
@@ -58,7 +58,7 @@ void sendData(char* method, char* resource, char* body){
 }
 
 void setLogin(char* name){
-	username = name;
+	strcpy(username, name);
 	status = 1;
 	printf("Welcome %s to your Mail\n", name);
 }
@@ -92,7 +92,7 @@ void listenForConnection(int fd){
 }
 
 void writeEmail(){
-	char[30] result;
+	char result[30];
 	printf("Send Email");
 }
 
@@ -102,7 +102,7 @@ void grabNewEmails(){
 
 void readConsole(){
 	int a;
-	char[30] result;
+	char result[30];
 	if(status == 0){
 		printf("Ingrese Numero de Opcion:\n");
 		printf("1: Login\n");
@@ -132,13 +132,14 @@ void readConsole(){
 }
 
 int main() {
+	printf("make anda\n");
 	int fd2;
 	char* route; 
 	route = createPipe(); 
 	printf("%s\n", route);
 	sender = open("/tmp/serv.xxxxx", O_WRONLY | O_NONBLOCK);
 	fd2 = open(route, O_RDONLY | O_NONBLOCK);
-	sendData();
+	sendData("client", "register", " ");
 	while(1){
 		listenForConnection(fd2);
 		readConsole();

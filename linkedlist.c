@@ -1,14 +1,14 @@
 #include "linkedlist.h"
 #include <stdlib.h>
 
-struct linked_list* createlist(void* val) {
+linked_list* createList(void* val) {
 
-	struct linked_list *list = (struct linked_list*) malloc(
-			sizeof(struct linked_list));
+	linked_list *list = (linked_list*) malloc(
+			sizeof(linked_list));
 
 	if (val != NULL ) {
 
-		struct node *first_node = (struct node*) malloc(sizeof(struct node));
+		node *first_node = (node*) malloc(sizeof(node));
 
 		printf("Creating list.\n");
 
@@ -29,9 +29,9 @@ struct linked_list* createlist(void* val) {
 	}
 }
 
-void addnode(linked_list* list, void* val, bool addtoend) {
+void addNode(linked_list* list, void* val, bool addtoend) {
 
-	struct node* new_node = (struct node*) malloc(sizeof(struct node));
+	node* new_node = (node*) malloc(sizeof(node));
 
 	new_node->val = val;
 	new_node->next = NULL;
@@ -53,13 +53,13 @@ void addnode(linked_list* list, void* val, bool addtoend) {
 	(list->length)++;
 }
 
-void removefirstnode(struct linked_list* list) {
+void removefirstnode(linked_list* list) {
 	if (isempty(list)) {
 		printf("Cannot remove first node, list is empty.\n");
 		return;
 	}
 
-	struct node *temp = list->head;
+	node *temp = list->head;
 
 	if ((list->head)->next != NULL ) {
 		printf("Removing first element.\n");
@@ -80,10 +80,10 @@ void removelastnode(linked_list* list) {
 		return;
 	}
 
-	struct node *current = list->head;
+	node *current = list->head;
 
 	if (current != NULL && current->next != NULL ) {
-		struct node *prev;
+		node *prev;
 
 		prev = current;
 		current = current->next;
@@ -104,13 +104,13 @@ void removelastnode(linked_list* list) {
 	free(current);
 }
 
-void removenode(linked_list* list, struct node* n) {
+void removenode(linked_list* list, node* n) {
 
 }
 
-struct node* search(linked_list* list, void* val) {
+node* search(linked_list* list, void* val) {
 
-	struct node *n = (struct node*) malloc(sizeof(struct node));
+	node *n = (node*) malloc(sizeof(node));
 
 	n = list->head;
 
@@ -124,7 +124,7 @@ struct node* search(linked_list* list, void* val) {
 	return n;
 }
 
-bool isempty(struct linked_list* list) {
+bool isempty(linked_list* list) {
 	return list->length == 0;
 }
 
@@ -135,12 +135,12 @@ void printlist(linked_list* list) {
 		return;
 	}
 
-	struct node *current = (struct node*) malloc(sizeof(struct node));
+	node *current = (node*) malloc(sizeof(node));
 
 	current = list->head;
 
 	while (current != NULL ) {
-		printf("%d", (int) current->val); //TODO edit for generic printout
+		//printf("%d", (int) current->val); //TODO edit for generic printout
 		printf("->");
 		if (current->next == NULL ) {
 			printf("NULL\n");
@@ -152,6 +152,6 @@ void printlist(linked_list* list) {
 	free(current);
 }
 
-int length(struct linked_list* list) {
+int length(linked_list* list) {
 	return list->length;
 }

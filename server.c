@@ -16,7 +16,7 @@
 Task* head;
 Task* tail;
 Client* clients;
-linkedlist* users;
+linked_list* users;
 
 void createBasePipe(){
 	char route[16];
@@ -145,8 +145,8 @@ void registerUser(char* data){
 	time_t timer;
 	user* elem = malloc(sizeof(user));
 	tokens = strtok(data,",");
-	time(timer);
-	elem->registration_data = msg->modification_date = timer;
+	time(&timer);
+	elem->registration_date = timer;
 	elem->name = malloc(strlen(tokens));
 	strcpy(elem->name, tokens);
 	tokens = strtok(NULL,",");
@@ -156,20 +156,30 @@ void registerUser(char* data){
 	elem->password = malloc(strlen(tokens));
 	strcpy(elem->password, tokens);
 	elem->fee = 0;
-	elem->mail_list = elem->friend_list = NULL;
+	elem->mail_list = NULL;
 
-	addnode(users, elem, true);
+	addNode(users, elem, true);
+	printf("Registered User: %s\n", elem->username);
 }
 
 void loginUser(char* data){
-	linked_list* aux = users;
+	node* aux = users->head;
 	char* tokens = strtok(data,",");
+	user* elem;
 	while(aux != NULL){
-		if(strcmp(aux->val->username, tokens) == 0){
+		elem = (user*)aux->val;
+		if(strcmp(elem->username, tokens) == 0){
 			tokens = strtok(NULL,",");
-			if(strcmp(aux->val->password, tokens) == 0){
-				printf("User %s logued in correctly\n", aux->val->username);
+			if(strcmp(elem->password, tokens) == 0){
+				aux = NULL;
+				printf("User %s logued correctly\n", elem->username);
+			}else{
+				aux = NULL;
+				printf("Incorrect password, User: %s\n", elem->username);
 			}
+		}else{
+			aux = NULL;
+			printf("Incorrect Username: %s", elem->username);
 		}
 	}
 }
@@ -181,8 +191,8 @@ void executeActions(){
 			if(strcmp(msg->method, "register") == 0){
 				registerClient(msg->referer);
 			}
-		}else if(srtcmp(msg->resource, "login") == 0){
-			if(srtcmp(msg->method, "register") == 0){
+		}else if(strcmp(msg->resource, "login") == 0){
+			if(strcmp(msg->method, "register") == 0){
 				registerUser(msg->body);
 			}else if(strcmp(msg->method, "login") == 0){
 				loginUser(msg->body);
@@ -210,6 +220,7 @@ int main() {
 	int fd;
 	head = tail = NULL;
 	clients = NULL;
+	users = createList(NULL);
 	createBasePipe();
 	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	printf("Listening on: /tmp/serv.xxxxx\n");

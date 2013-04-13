@@ -1,6 +1,6 @@
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
-#endif
+
 
 typedef struct _message{
 	char protocol[9]; // "TPSO 0.1"
@@ -21,3 +21,5 @@ typedef struct _client{
 	int fd;
 	struct _client * next;
 }Client;
+
+#endif

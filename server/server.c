@@ -8,9 +8,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "message.h"
-#include "user.h"
-#include "linkedlist.h"
+#include "../includes/message.h"
+#include "../includes/user.h"
+#include "../includes/linkedlist.h"
 
 
 Task* head;

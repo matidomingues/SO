@@ -1,2 +1,2 @@
-gcc -o client client.c
-gcc -o server server.c linkedlist.c
+gcc -o bin/client client/client.c
+gcc -o bin/server server/server.c includes/linkedlist.c

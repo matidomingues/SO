@@ -18,7 +18,6 @@
 *.out
 *.app
 
-#app
-client
-server
+app 
+bin
 

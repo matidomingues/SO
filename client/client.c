@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "message.h"
+#include "../includes/message.h"
 #include <time.h>
 
 int status = 0;

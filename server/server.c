@@ -17,6 +17,7 @@ Task* head;
 Task* tail;
 Client* clients;
 linked_list* users;
+fd_set active_fd_set;
 
 void createBasePipe(){
 	char route[16];
@@ -64,20 +65,12 @@ Message* prepareMessage(){
 	return info;
 }
 
-Message* fillMessageData(Message* msg, char* method, char* resource, int referer, char* body){
-	strcpy(msg->protocol, "TPSO 0.12");
-	strcpy(msg->method, method);
-	strcpy(msg->resource, resource);
-	time(&(msg->time));
-	msg->referer = referer;
-	strcpy(msg->body, body);
-	return msg;
-
-}
-
 void listenForConnection(int fd){
 	int status = 0;
 	Message* info = malloc(sizeof(Message));
+	if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
+		perror("select");
+	}
 	status = read(fd, info, sizeof(Message));
 	if(status <= 0){
 		free(info);
@@ -102,22 +95,35 @@ char* getFullPath(int id){
 	return route;
 }
 
-void sendData(int fd, char* route){
+Message* fillMessageData(Message* msg, char* method, char* resource, char* body){
+	strcpy(msg->protocol, "TPSO 0.12");
+	strcpy(msg->method, method);
+	strcpy(msg->resource, resource);
+	time(&(msg->time));
+	msg->referer = getpid();
+	strcpy(msg->body, body);
+	return msg;
+
+}
+
+void sendData(int fd, char* resource, char* method, char* body){
 	int status;
 	Message* msg = prepareMessage();
-	msg = fillMessageData(msg, "register", "login", getpid(), "");
+	msg = fillMessageData(msg, method, resource, body);
 	while ((status = write(fd, msg, sizeof(Message))) == 0){
 		printf("paso2\n");
 	}
 	if(status == -1){
-		printf("ERROR ON PIPE write");
+		printf("ERROR ON PIPE write\n");
 	}else{
-		printf("wrote");
+		printf("wrote\n");
 	}
+	free(msg);
 }
 
 void registerClient(int referer){
 	char* route = getFullPath(referer);
+	printf("%s\n", route);
 	int fd = open(route, O_WRONLY | O_NONBLOCK);
 	Client* client = newClientNode();
 	client->pid = referer;
@@ -125,13 +131,14 @@ void registerClient(int referer){
 	client->next = clients;
 	clients = client;
 	printf("Registering client %d\n", referer);
-	sendData(fd, route);
+	sendData(fd, "client", "success", "");
 }
 
 int getClientFile(int pid){
 	Client* aux = clients;
 	while(aux != NULL){
 		if(aux->pid == pid){
+			printf("%d\n", aux->fd);
 			return aux->fd;
 		}
 	}
@@ -140,7 +147,8 @@ int getClientFile(int pid){
 
 
 
-void registerUser(char* data){
+void registerUser(Message* msg){
+	char* data = msg->body;
 	char* tokens;
 	time_t timer;
 	user* elem = malloc(sizeof(user));
@@ -160,28 +168,33 @@ void registerUser(char* data){
 
 	addNode(users, elem, true);
 	printf("Registered User: %s\n", elem->username);
+	sendData(getClientFile(msg->referer), "register", "success", "");
 }
 
-void loginUser(char* data){
+void loginUser(Message* msg){
+	int finished = 0;
+	char* data = msg->body;
 	node* aux = users->head;
 	char* tokens = strtok(data,",");
 	user* elem;
-	while(aux != NULL){
+	while(aux != NULL && finished != 1){
 		elem = (user*)aux->val;
 		if(strcmp(elem->username, tokens) == 0){
 			tokens = strtok(NULL,",");
 			if(strcmp(elem->password, tokens) == 0){
-				aux = NULL;
+				finished = 1;
 				printf("User %s logued correctly\n", elem->username);
+				sendData(getClientFile(msg->referer), "login", "success", elem->username);
 			}else{
-				aux = NULL;
+				finished = 1;
 				printf("Incorrect password, User: %s\n", elem->username);
+				sendData(getClientFile(msg->referer), "login", "error", "Incorrect Password");
 			}
-		}else{
-			aux = NULL;
-			printf("Incorrect Username: %s", elem->username);
 		}
+		aux = aux->next;
 	}
+	printf("Incorrect Username");
+	sendData(getClientFile(msg->referer), "login", "error", "Incorrect Username");
 }
 
 void executeActions(){
@@ -193,9 +206,9 @@ void executeActions(){
 			}
 		}else if(strcmp(msg->resource, "login") == 0){
 			if(strcmp(msg->method, "register") == 0){
-				registerUser(msg->body);
+				registerUser(msg);
 			}else if(strcmp(msg->method, "login") == 0){
-				loginUser(msg->body);
+				loginUser(msg);
 			}
 		}else if(strcmp(msg->resource, "mail") == 0){
 			if(strcmp(msg->method, "send") == 0){
@@ -223,6 +236,8 @@ int main() {
 	users = createList(NULL);
 	createBasePipe();
 	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
+	FD_ZERO (&active_fd_set);
+    FD_SET (fd, &active_fd_set);
 	printf("Listening on: /tmp/serv.xxxxx\n");
 	while(1){
 		listenForConnection(fd);

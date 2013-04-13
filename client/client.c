@@ -7,14 +7,27 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/select.h>
 
 #include "../includes/message.h"
 #include <time.h>
 
+Message* prepareMessage();
+Message* fillMessageData(Message* msg, char* method, char* resource, char* body);
+void dispatchEvent(Message* msg);
+void listenForConnection();
+char* createPipe();
+void sendData(char* resource, char* method, char* body);
+void setLogin(char* name);
+void writeEmail();
+void grabNewEmails();
+void readConsole();
+
 int status = 0;
+int receiver;
 int sender;
-int fd;
 char username[7];
+fd_set active_fd_set;
 
 Message* prepareMessage(){
 	Message* info = (Message*) malloc(sizeof(Message)); 
@@ -30,6 +43,42 @@ Message* fillMessageData(Message* msg, char* method, char* resource, char* body)
 	strcpy(msg->body, body);
 	return msg;
 
+}
+
+void dispatchEvent(Message* msg){
+	if(strcmp(msg->resource, "login") == 0){
+		if(strcmp(msg->method, "success") == 0){
+			setLogin(msg->body);
+		}else if(strcmp(msg->method, "error") == 0){
+			printf("%s\n", msg->body);
+		}
+	}else if(strcmp(msg->resource, "register") == 0){
+		if(strcmp(msg->method, "success") == 0){
+			printf("User Registered Successfully, proceed to Log In\n");
+		}else if(strcmp(msg->method, "error") == 0){
+			printf("%s\n", msg->body);
+		}
+	}else if(strcmp(msg->resource, "client") ==0){
+		if(strcmp(msg->method, "success") == 0){
+			printf("Client Registered Successfully\n");
+		}
+	}
+}
+
+void listenForConnection(){
+	int status = 0;
+	Message* msg = malloc(sizeof(Message));
+    if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
+		perror("select");
+	}
+	status = read(receiver, msg, sizeof(Message));
+	if(status == -1){
+		free(msg);
+		//perror("read");
+	}else if(status >=1){
+		dispatchEvent(msg);
+	}
+	
 }
 
 char* createPipe(){
@@ -50,45 +99,18 @@ void sendData(char* resource, char* method, char* body){
 		printf("paso2\n");
 	}
 	if(status == -1){
-		printf("ERROR ON PIPE write");
+		printf("ERROR ON PIPE write\n");
 	}else{
-		printf("wrote");
+		printf("wrote\n");
 	}
 	free(msg);
+	listenForConnection();
 }
 
 void setLogin(char* name){
 	strcpy(username, name);
 	status = 1;
 	printf("Welcome %s to your Mail\n", name);
-}
-
-void dispatchEvent(Message* msg){
-	if(strcmp(msg->resource, "login") == 0){
-		if(strcmp(msg->method, "success") == 0){
-			setLogin(msg->body);
-		}else if(strcmp(msg->method, "error") == 0){
-			printf("Error on login. Try again\n");
-		}
-	}else if(strcmp(msg->resource, "register") == 0){
-		if(strcmp(msg->method, "success") == 0){
-			printf("User Registered Successfully, proceed to Log In\n");
-		}else if(strcmp(msg->method, "error") == 0){
-			printf("Error on registration. Try again\n");
-		}
-	}
-}
-
-void listenForConnection(int fd){
-	int status = 0;
-	Message* msg = malloc(sizeof(Message));
-	status = read(fd, msg, sizeof(Message));
-	if(status == -1){
-		free(msg);
-		//perror("read");
-	}else if(status >=1){
-		dispatchEvent(msg);
-	}
 }
 
 void writeEmail(){
@@ -112,6 +134,7 @@ void readConsole(){
 			printf("Ingrese Usuario y Contraseña\n Separados por ',' de la forma Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData("login", "login", result);
+
 		}else if(a == 2){
 			printf("Ingrese Nombre, Usuario y Contraseña\nSeparados por ',' de la forma\nNombre,Usuario,Contraseña\n");
 			scanf("%30s", result);
@@ -132,16 +155,15 @@ void readConsole(){
 }
 
 int main() {
-	printf("make anda\n");
-	int fd2;
 	char* route; 
 	route = createPipe(); 
 	printf("%s\n", route);
 	sender = open("/tmp/serv.xxxxx", O_WRONLY | O_NONBLOCK);
-	fd2 = open(route, O_RDONLY | O_NONBLOCK);
-	sendData("client", "register", " ");
+	receiver = open(route, O_RDONLY | O_NONBLOCK);
+	FD_ZERO (&active_fd_set);
+    FD_SET (receiver, &active_fd_set);
+	sendData("client", "register", "");
 	while(1){
-		listenForConnection(fd2);
 		readConsole();
 	}
 	return 1;

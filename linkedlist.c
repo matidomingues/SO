@@ -1,26 +1,32 @@
 #include "linkedlist.h"
 #include <stdlib.h>
 
-struct node *head;
-struct node *last;
-
 struct linked_list* createlist(void* val) {
 
 	struct linked_list *list = (struct linked_list*) malloc(
 			sizeof(struct linked_list));
 
-	struct node *first_node = (struct node*) malloc(sizeof(struct node));
+	if (val != NULL ) {
 
-	printf("Creating list.\n");
+		struct node *first_node = (struct node*) malloc(sizeof(struct node));
 
-	first_node->val = val;
-	first_node->next = NULL;
+		printf("Creating list.\n");
 
-	list->head = first_node;
-	list->last = first_node;
-	list->length = 1;
+		first_node->val = val;
+		first_node->next = NULL;
 
-	return list;
+		list->head = first_node;
+		list->last = first_node;
+		list->length = 1;
+		return list;
+	} else {
+		printf("Creating NULL list.\n");
+
+		list->head = NULL;
+		list->last = NULL;
+		list->length = 0;
+		return list;
+	}
 }
 
 void addnode(linked_list* list, void* val, bool addtoend) {
@@ -55,7 +61,7 @@ void removefirstnode(struct linked_list* list) {
 
 	struct node *temp = list->head;
 
-	if ((list->head)->next != NULL) {
+	if ((list->head)->next != NULL ) {
 		printf("Removing first element.\n");
 		list->head = (list->head)->next;
 		free(temp);
@@ -76,13 +82,13 @@ void removelastnode(linked_list* list) {
 
 	struct node *current = list->head;
 
-	if (current != NULL && current->next != NULL) {
+	if (current != NULL && current->next != NULL ) {
 		struct node *prev;
 
 		prev = current;
 		current = current->next;
 
-		while (current->next != NULL) {
+		while (current->next != NULL ) {
 			prev = current;
 			current = current->next;
 		}
@@ -112,14 +118,14 @@ struct node* search(linked_list* list, void* val) {
 		if (n->val == val) {
 			return n;
 		} else {
-			n = head->next;
+			n = list->head->next;
 		}
-	} while (n != NULL);
+	} while (n != NULL );
 	return n;
 }
 
 bool isempty(struct linked_list* list) {
-	return list->head == NULL;
+	return list->length == 0;
 }
 
 void printlist(linked_list* list) {
@@ -133,10 +139,10 @@ void printlist(linked_list* list) {
 
 	current = list->head;
 
-	while (current != NULL) {
-		printf("%d", current->val); //TODO edit for generic printout
+	while (current != NULL ) {
+		printf("%d", (int) current->val); //TODO edit for generic printout
 		printf("->");
-		if (current->next == NULL) {
+		if (current->next == NULL ) {
 			printf("NULL\n");
 			return;
 		} else {

@@ -9,10 +9,14 @@
 #include <sys/stat.h>
 
 #include "message.h"
+#include "user.h"
+#include "linkedlist.h"
+
 
 Task* head;
 Task* tail;
 Client* clients;
+linkedlist* users;
 
 void createBasePipe(){
 	char route[16];
@@ -134,12 +138,60 @@ int getClientFile(int pid){
 	return 0;
 }
 
+
+
+void registerUser(char* data){
+	char* tokens;
+	time_t timer;
+	user* elem = malloc(sizeof(user));
+	tokens = strtok(data,",");
+	time(timer);
+	elem->registration_data = msg->modification_date = timer;
+	elem->name = malloc(strlen(tokens));
+	strcpy(elem->name, tokens);
+	tokens = strtok(NULL,",");
+	elem->username = malloc(strlen(tokens));
+	strcpy(elem->username, tokens);
+	tokens = strtok(NULL,",");
+	elem->password = malloc(strlen(tokens));
+	strcpy(elem->password, tokens);
+	elem->fee = 0;
+	elem->mail_list = elem->friend_list = NULL;
+
+	addnode(users, elem, true);
+}
+
+void loginUser(char* data){
+	linked_list* aux = users;
+	char* tokens = strtok(data,",");
+	while(aux != NULL){
+		if(strcmp(aux->val->username, tokens) == 0){
+			tokens = strtok(NULL,",");
+			if(strcmp(aux->val->password, tokens) == 0){
+				printf("User %s logued in correctly\n", aux->val->username);
+			}
+		}
+	}
+}
+
 void executeActions(){
 	Message* msg;
 	while((msg = popMessage()) != NULL){
-		if(strcmp(msg->resource, "login") == 0){
+		if(strcmp(msg->resource, "client") == 0){
 			if(strcmp(msg->method, "register") == 0){
 				registerClient(msg->referer);
+			}
+		}else if(srtcmp(msg->resource, "login") == 0){
+			if(srtcmp(msg->method, "register") == 0){
+				registerUser(msg->body);
+			}else if(strcmp(msg->method, "login") == 0){
+				loginUser(msg->body);
+			}
+		}else if(strcmp(msg->resource, "mail") == 0){
+			if(strcmp(msg->method, "send") == 0){
+
+			}else if(strcmp(msg->method, "receive") == 0){
+
 			}
 		}
 	}

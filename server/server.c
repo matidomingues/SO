@@ -237,7 +237,7 @@ int main() {
 	head = tail = NULL;
 	clients = NULL;
 	users = createList(NULL);
-	init_userlist("csv/users.csv", users);
+	init_userlist("../csv/users.csv", users);
 	createBasePipe();
 	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	FD_ZERO (&active_fd_set);

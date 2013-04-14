@@ -42,6 +42,10 @@ void printlist(linked_list* list);
 /*Devuelve la longitud de la lista*/
 int length(linked_list* list);
 
+bool hasNext(node* node);
+
+node* next(node* node);
+
 #endif
 
 

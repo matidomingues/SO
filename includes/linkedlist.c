@@ -3,14 +3,13 @@
 
 linked_list* createList(void* val) {
 
-	linked_list *list = (linked_list*) malloc(
-			sizeof(linked_list));
+	linked_list *list = (linked_list*) malloc(sizeof(linked_list));
 
 	if (val != NULL ) {
 
 		node *first_node = (node*) malloc(sizeof(node));
 
-		printf("Creating list.\n");
+		//printf("Creating list.\n");
 
 		first_node->val = val;
 		first_node->next = NULL;
@@ -20,7 +19,7 @@ linked_list* createList(void* val) {
 		list->length = 1;
 		return list;
 	} else {
-		printf("Creating NULL list.\n");
+		//printf("Creating NULL list.\n");
 
 		list->head = NULL;
 		list->last = NULL;
@@ -37,15 +36,15 @@ void addNode(linked_list* list, void* val, bool addtoend) {
 	new_node->next = NULL;
 
 	if (isempty(list)) { //Primer elemento
-		printf("Adding first element.\n");
+		//printf("Adding first element.\n");
 		list->head = list->last = new_node;
 	} else {
 		if (addtoend) {
-			printf("Adding node to end.\n");
+			//printf("Adding node to end.\n");
 			(list->last)->next = new_node;
 			list->last = new_node;
 		} else {
-			printf("Adding to beggining.\n");
+			//printf("Adding to beggining.\n");
 			new_node->next = list->head;
 			list->head = new_node;
 		}
@@ -62,11 +61,11 @@ void removefirstnode(linked_list* list) {
 	node *temp = list->head;
 
 	if ((list->head)->next != NULL ) {
-		printf("Removing first element.\n");
+		//printf("Removing first element.\n");
 		list->head = (list->head)->next;
 		free(temp);
 	} else { //Hay un solo elemento
-		printf("Removing final element.\n");
+		//printf("Removing final element.\n");
 		list->head = NULL;
 		free(temp);
 	}
@@ -76,7 +75,7 @@ void removefirstnode(linked_list* list) {
 void removelastnode(linked_list* list) {
 
 	if (isempty(list)) {
-		printf("Cannot remove last node, list is empty.\n");
+		//printf("Cannot remove last node, list is empty.\n");
 		return;
 	}
 
@@ -97,7 +96,7 @@ void removelastnode(linked_list* list) {
 		list->last = prev;
 	} else {
 		//Hay un solo elemento o ninguno
-		printf("Removing final element.\n");
+		//printf("Removing final element.\n");
 		list->head = list->last = NULL;
 	}
 	list->length--;
@@ -128,7 +127,7 @@ bool isempty(linked_list* list) {
 	return list->length == 0;
 }
 
-void printlist(linked_list* list) {
+void printList(linked_list* list) {
 
 	if (isempty(list)) {
 		printf("List is empty.\n");
@@ -154,4 +153,12 @@ void printlist(linked_list* list) {
 
 int length(linked_list* list) {
 	return list->length;
+}
+
+bool hasNext(node* node) {
+	return (node->next != NULL );
+}
+
+node* next(node* node) {
+	return node->next;
 }

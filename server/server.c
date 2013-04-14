@@ -11,6 +11,7 @@
 #include "../includes/message.h"
 #include "../includes/user.h"
 #include "../includes/linkedlist.h"
+#include "../includes/csv.h"
 
 
 Task* head;
@@ -193,8 +194,10 @@ void loginUser(Message* msg){
 		}
 		aux = aux->next;
 	}
-	printf("Incorrect Username");
-	sendData(getClientFile(msg->referer), "login", "error", "Incorrect Username");
+	if(aux == NULL && finished == 0){
+		printf("Incorrect Username");
+		sendData(getClientFile(msg->referer), "login", "error", "Incorrect Username");
+	}
 }
 
 void executeActions(){
@@ -234,6 +237,7 @@ int main() {
 	head = tail = NULL;
 	clients = NULL;
 	users = createList(NULL);
+	init_userlist("csv/users.csv", users);
 	createBasePipe();
 	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	FD_ZERO (&active_fd_set);

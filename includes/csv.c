@@ -1,4 +1,4 @@
-#include "..\includes\csv.h"
+#include "csv.h"
 
 void init_userlist(const char* filename, linked_list* userlist) {
 	char line[MAXLINELEN] = { 0x0 };
@@ -35,8 +35,8 @@ void init_userlist(const char* filename, linked_list* userlist) {
 		u->password = malloc(sizeof(arr[1]));
 		strcpy(u->password, arr[1]);
 
-		u->registration_date = (int) arr[2]; //TODO Cast to time_t
-		u->modification_date = (int) arr[3]; //TODO Cast to time_t
+		u->registration_date = (time_t) atoi(arr[2]); //TODO Cast to time_t
+		u->modification_date = (time_t) atoi(arr[3]); //TODO Cast to time_t
 		u->fee = atof(arr[4]);
 
 		addNode(userlist, u, 1);

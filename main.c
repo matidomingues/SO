@@ -1,29 +1,29 @@
-#include "..\includes\csv.h"
-#include "..\includes\linkedlist.h"
+#include "includes\csv.h"
+#include "includes\linkedlist.h"
 int main() {
 
-	struct linked_list* userlist = createlist(NULL );
-	init_userlist("users.csv", userlist);
+	linked_list* userlist = createList(NULL );
+	init_userlist("csv/users.csv", userlist);
 
-	struct linked_list* maillist = createlist(NULL );
-	init_messagelist("Mails/username1.csv", maillist);
+	linked_list* maillist = createList(NULL );
+	init_messagelist("csv/Mails/username1.csv", maillist);
 	//printlist(userlist);
 
 	printf("%s\n", ((user*) (userlist->head->val))->username);
 	printf("%s\n", ((user*) (userlist->head->val))->password);
-	printf("%s\n", ((user*) (userlist->head->val))->modification_date);
 	printf("%s\n", ((user*) (userlist->head->val))->registration_date);
-	printf("%s\n", ((user*) (userlist->head->val))->tarifa);
+	printf("%s\n", ((user*) (userlist->head->val))->modification_date);
+	printf("%s\n", ((user*) (userlist->head->val))->fee);
 	printf("%s\n", ((user*) (userlist->head->next->val))->username);
 	printf("%s\n", ((user*) (userlist->head->next->val))->password);
-	printf("%s\n", ((user*) (userlist->head->next->val))->modification_date);
 	printf("%s\n", ((user*) (userlist->head->next->val))->registration_date);
-	printf("%f\n", ((user*) (userlist->head->next->val))->tarifa);
+	printf("%s\n", ((user*) (userlist->head->next->val))->modification_date);
+	printf("%f\n", ((user*) (userlist->head->next->val))->fee);
 	printf("%s\n", ((user*) (userlist->last->val))->username);
 	printf("%s\n", ((user*) (userlist->last->val))->password);
-	printf("%s\n", ((user*) (userlist->last->val))->modification_date);
 	printf("%s\n", ((user*) (userlist->last->val))->registration_date);
-	printf("%f\n", ((user*) (userlist->last->val))->tarifa);
+	printf("%s\n", ((user*) (userlist->last->val))->modification_date);
+	printf("%f\n", ((user*) (userlist->last->val))->fee);
 
 	printf("%s\n", ((mail*) (maillist->head->val))->to);
 	printf("%s\n", ((mail*) (maillist->head->val))->from);

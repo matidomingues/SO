@@ -39,7 +39,7 @@ void init_userlist(const char* filename, linked_list* userlist) {
 		u->modification_date = (int) arr[3]; //TODO Cast to time_t
 		u->fee = atof(arr[4]);
 
-		addnode(userlist, u, 1);
+		addNode(userlist, u, 1);
 	}
 	fclose(fp); /* Close file */
 }
@@ -87,7 +87,7 @@ void init_messagelist(const char* filename, linked_list* messagelist) {
 
 		m->attachments = arr[4];
 
-		addnode(messagelist, m, 1);
+		addNode(messagelist, m, 1);
 	}
 	fclose(fp); /* Close file */
 }

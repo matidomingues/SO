@@ -20,6 +20,6 @@
 void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
 		int *fieldcount);
 
-void init_userlist(const char* filename, struct linked_list* userlist);
+void init_userlist(const char* filename, linked_list* userlist);
 
-void init_messagelist(const char* filename, struct linked_list* messagelist);
+void init_messagelist(const char* filename, linked_list* messagelist);

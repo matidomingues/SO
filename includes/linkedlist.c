@@ -1,4 +1,4 @@
-#include "linkedlist.h"
+#include "..\includes\linkedlist.h"
 #include <stdlib.h>
 
 linked_list* createList(void* val) {

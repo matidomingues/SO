@@ -1,6 +1,6 @@
-#include "csv.h"
+#include "..\includes\csv.h"
 
-void init_userlist(const char* filename, struct linked_list* userlist) {
+void init_userlist(const char* filename, linked_list* userlist) {
 	char line[MAXLINELEN] = { 0x0 };
 	int fieldcount = 0;
 	char arr[MAXFLDS][MAXFLDLEN] = { 0x0 };
@@ -37,14 +37,14 @@ void init_userlist(const char* filename, struct linked_list* userlist) {
 
 		u->registration_date = (int) arr[2]; //TODO Cast to time_t
 		u->modification_date = (int) arr[3]; //TODO Cast to time_t
-		u->tarifa = atof(arr[4]);
+		u->fee = atof(arr[4]);
 
 		addnode(userlist, u, 1);
 	}
 	fclose(fp); /* Close file */
 }
 
-void init_messagelist(const char* filename, struct linked_list* messagelist) {
+void init_messagelist(const char* filename, linked_list* messagelist) {
 	char line[MAXLINELEN] = { 0x0 };
 	int fieldcount = 0;
 	char arr[MAXFLDS][MAXFLDLEN] = { 0x0 };

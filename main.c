@@ -1,5 +1,5 @@
-#include "csv.h"
-
+#include "..\includes\csv.h"
+#include "..\includes\linkedlist.h"
 int main() {
 
 	struct linked_list* userlist = createlist(NULL );

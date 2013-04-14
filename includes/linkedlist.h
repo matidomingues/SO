@@ -37,7 +37,7 @@ node* search(linked_list* list, void* val);
 bool isempty(linked_list* list);
 
 /*Imprime la lista en la salida estandar*/
-void printlist(linked_list* list);
+void printList(linked_list* list);
 
 /*Devuelve la longitud de la lista*/
 int length(linked_list* list);

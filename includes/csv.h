@@ -22,4 +22,6 @@ void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
 
 void init_userlist(const char* filename, linked_list* userlist);
 
-void init_messagelist(const char* filename, linked_list* messagelist);
+void init_messagelist(const char* username, linked_list* messagelist);
+
+void addUserToCsv(user* u, char* filename);

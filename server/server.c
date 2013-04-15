@@ -12,7 +12,7 @@
 #include "../includes/user.h"
 #include "../includes/linkedlist.h"
 #include "../includes/csv.h"
-
+#include "../includes/mail.h"
 
 Task* head;
 Task* tail;
@@ -116,8 +116,6 @@ void sendData(int fd, char* resource, char* method, char* body){
 	}
 	if(status == -1){
 		printf("ERROR ON PIPE write\n");
-	}else{
-		printf("wrote\n");
 	}
 	free(msg);
 }
@@ -139,7 +137,6 @@ int getClientFile(int pid){
 	Client* aux = clients;
 	while(aux != NULL){
 		if(aux->pid == pid){
-			printf("%d\n", aux->fd);
 			return aux->fd;
 		}
 	}
@@ -172,31 +169,71 @@ void registerUser(Message* msg){
 	sendData(getClientFile(msg->referer), "register", "success", "");
 }
 
+user* findUserByUsername(char* username){
+	node* aux = users->head;
+	user* node;
+	while(aux != NULL){
+		node = (user*) aux->val;
+		if(strcmp(node->username, username) == 0){
+			return node;
+		}
+		aux = aux->next;
+	}
+	return NULL;
+}
+
 void loginUser(Message* msg){
 	int finished = 0;
 	char* data = msg->body;
 	node* aux = users->head;
 	char* tokens = strtok(data,",");
 	user* elem;
-	while(aux != NULL && finished != 1){
-		elem = (user*)aux->val;
-		if(strcmp(elem->username, tokens) == 0){
-			tokens = strtok(NULL,",");
-			if(strcmp(elem->password, tokens) == 0){
-				finished = 1;
-				printf("User %s logued correctly\n", elem->username);
-				sendData(getClientFile(msg->referer), "login", "success", elem->username);
-			}else{
-				finished = 1;
-				printf("Incorrect password, User: %s\n", elem->username);
-				sendData(getClientFile(msg->referer), "login", "error", "Incorrect Password");
-			}
+	if((elem = findUserByUsername(tokens)) != NULL){
+		tokens = strtok(NULL,",");
+		if(strcmp(elem->password, tokens) == 0){
+			printf("User %s logued correctly\n", elem->username);
+			sendData(getClientFile(msg->referer), "login", "success", elem->username);
+		}else{
+			printf("Incorrect password, User: %s\n", elem->username);
+			sendData(getClientFile(msg->referer), "login", "error", "Incorrect Password");
 		}
-		aux = aux->next;
-	}
-	if(aux == NULL && finished == 0){
+	}else{
 		printf("Incorrect Username");
 		sendData(getClientFile(msg->referer), "login", "error", "Incorrect Username");
+	}
+}
+
+void sendAllMails(int client, user* elem){
+	node* aux = elem->mail_list->head;
+	while(aux != NULL){
+		write(client, (mail*)aux->val, sizeof(mail));
+		aux = aux->next;
+	}
+}
+
+void sendEmails(Message* msg){
+	user* elem = findUserByUsername(msg->body);
+	char* num;
+	int client = getClientFile(msg->referer);
+	sprintf(num,"%d",elem->mail_list->length);
+	sendData(client, "mail", "receive", (char*)num);
+	sendAllMails(client, elem);
+}
+
+void recieveEmail(){
+	int status = 0;
+	user* data;
+	mail* info = malloc(sizeof(mail));
+	if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
+		perror("select");
+	}
+	status = read(fd, info, sizeof(mail));
+	if(status <= 0){
+		free(info);
+		//perror("read");
+	}else if(status >=1){
+		data = findUserByUsername(info->to);
+		addNode(data->mail_list, info, true);
 	}
 }
 
@@ -215,9 +252,9 @@ void executeActions(){
 			}
 		}else if(strcmp(msg->resource, "mail") == 0){
 			if(strcmp(msg->method, "send") == 0){
-
+				recieveEmail();
 			}else if(strcmp(msg->method, "receive") == 0){
-
+				sendEmails(msg);
 			}
 		}
 	}
@@ -237,7 +274,7 @@ int main() {
 	head = tail = NULL;
 	clients = NULL;
 	users = createList(NULL);
-	init_userlist("../csv/users.csv", users);
+	init_userlist("csv/users.csv", users);
 	createBasePipe();
 	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	FD_ZERO (&active_fd_set);

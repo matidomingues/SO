@@ -85,19 +85,15 @@ void init_messagelist(const char* username, linked_list* messagelist) {
 		}
 		m = (struct mail*) malloc(sizeof(struct mail)); /*reserve space for mail*/
 
-		m->from = malloc(sizeof(arr[0]));
 		strcpy(m->from, arr[0]);
 
-		m->to = malloc(sizeof(arr[1]));
 		strcpy(m->to, arr[1]);
 
-		m->header = malloc(sizeof(arr[2]));
 		strcpy(m->header, arr[2]);
 
-		m->body = malloc(sizeof(arr[3]));
 		strcpy(m->body, arr[3]);
 
-		m->attachments = arr[4]; //TODO: Si es un path, cambiar el tipo a char* y hacer strcpy
+		strcpy(m->attachments, arr[4]); //TODO: Si es un path, cambiar el tipo a char* y hacer strcpy
 
 		addNode(messagelist, m, 1);
 	}

@@ -10,6 +10,7 @@
 #include <sys/select.h>
 
 #include "../includes/message.h"
+#include "../includes/mail.h"
 #include <time.h>
 
 Message* prepareMessage();
@@ -26,7 +27,7 @@ void readConsole();
 int status = 0;
 int receiver;
 int sender;
-char username[7];
+char username[15];
 fd_set active_fd_set;
 
 Message* prepareMessage() {
@@ -43,6 +44,24 @@ Message* fillMessageData(Message* msg, char* method, char* resource, char* body)
 	strcpy(msg->body, body);
 	return msg;
 
+}
+
+void recieveEmails(int num){
+	int i, error;
+	mail* msg = malloc(sizeof(mail));
+	for(i=0; i<num; i++){
+		if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL ) < 0) {
+			perror("select");
+		}
+		error = read(receiver, msg, sizeof(mail));
+		if (error == -1) {
+			printf("Error on mail\n");
+			//perror("read");
+		} else if (error >= 1) {
+			printf("%d: From: %s, Subject: %s\n", i+1, msg->from, msg->header);
+		}
+	}
+	free(msg);
 }
 
 void dispatchEvent(Message* msg) {
@@ -62,20 +81,24 @@ void dispatchEvent(Message* msg) {
 		if (strcmp(msg->method, "success") == 0) {
 			printf("Client Registered Successfully\n");
 		}
+	}else if(strcmp(msg->resource, "mail") == 0){
+		if(strcmp(msg->method, "receive") == 0){
+			recieveEmails(atoi(msg->body));
+		}
 	}
 }
 
 void listenForConnection() {
-	int status = 0;
+	int error = 0;
 	Message* msg = malloc(sizeof(Message));
 	if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL ) < 0) {
 		perror("select");
 	}
-	status = read(receiver, msg, sizeof(Message));
-	if (status == -1) {
+	error = read(receiver, msg, sizeof(Message));
+	if (error == -1) {
 		free(msg);
 		//perror("read");
-	} else if (status >= 1) {
+	} else if (error >= 1) {
 		dispatchEvent(msg);
 	}
 
@@ -100,8 +123,6 @@ void sendData(char* resource, char* method, char* body) {
 	}
 	if (status == -1) {
 		printf("ERROR ON PIPE write\n");
-	} else {
-		printf("wrote\n");
 	}
 	free(msg);
 	listenForConnection();
@@ -114,12 +135,21 @@ void setLogin(char* name) {
 }
 
 void writeEmail() {
-	char result[30];
-	printf("Send Email");
+	mail* elem = malloc(sizeof(mail));
+	printf("Ingrese destinatario\n");
+	scanf("%15s",&elem->to);
+	strcpy(elem->from, username);
+	printf("Ingrese el Asunto\n");
+	scanf("%30s", &elem->header);
+	printf("Ingrese el Mensaje\n");
+	scanf("%100s",&elem->body);
+	printf("Ingrese el path del attachment, en caso de no existir dejar vacio\n");
+	scanf("%30s", &elem->attachment);
+	elem->read = 0;
 }
 
 void grabNewEmails() {
-	sendData("mail", "receive", "");
+	sendData("mail", "receive", username);
 }
 
 void readConsole() {

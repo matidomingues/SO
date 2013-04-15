@@ -137,7 +137,7 @@ void addMailToUser(char* filename, mail* m) {
 		exit(EXIT_FAILURE);
 	}
 	fprintf(fp, "%s;%s;%s;%s;%s", m->from, m->to, m->header, m->body,
-			m->attachments);	//TODO: Por que aca no hace falta \n???
+			m->attachments); //TODO: Por que aca no hace falta \n???
 	fclose(fp);
 }
 

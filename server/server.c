@@ -232,6 +232,16 @@ void writeResponse(int referer, Message* msg){
 	}
 }
 
+void dumpAll() {
+	dumpUsersToCSVFile(users);
+	int i;
+	node* current = users->head;
+	for (i = 0; i < length(users); i++) {
+		dumpMailsToCSVFile(((user*) (current->val))->mail_list, current);
+		current = current->next;
+	}
+}
+
 int main() {
 	int fd;
 	head = tail = NULL;

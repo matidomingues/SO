@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define MAXLINELEN 1024	/* Maximum line length */
-#define MAXFLDS 5	/* Maximum number of fields */
+#define MAXFLDS 6	/* Maximum number of fields */
 #define MAXFLDLEN 30	/* Longest field + 1 = 31 byte field */	//TODO:Estirar esto si no alcanza!
 /****************************************************/
 /* void parseline()									*/

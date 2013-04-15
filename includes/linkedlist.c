@@ -54,7 +54,7 @@ void addNode(linked_list* list, void* val, bool addtoend) {
 
 void removeFirstNode(linked_list* list) {
 	if (isEmpty(list)) {
-		printf("Cannot remove first node, list is empty.\n");
+		//printf("Cannot remove first node, list is empty.\n");
 		return;
 	}
 
@@ -91,7 +91,7 @@ void removeLastNode(linked_list* list) {
 			prev = current;
 			current = current->next;
 		}
-		printf("Removing last element.\n");
+		//printf("Removing last element.\n");
 		prev->next = NULL;
 		list->last = prev;
 	} else {
@@ -130,7 +130,7 @@ bool isEmpty(linked_list* list) {
 void printList(linked_list* list) {
 
 	if (isEmpty(list)) {
-		printf("List is empty.\n");
+		//printf("List is empty.\n");
 		return;
 	}
 

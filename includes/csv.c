@@ -133,7 +133,7 @@ void addMailToUser(char* filename, mail* m) {
 		perror("File open error");
 		exit(EXIT_FAILURE);
 	}
-	fprintf(fp, "%s;%s;%s;%s;%s;%d", m->from, m->to, m->header, m->body,
+	fprintf(fp, "%s;%s;%s;%s;%s;%d\n", m->from, m->to, m->header, m->body,
 			m->attachments, (int) m->senttime);
 	fclose(fp);
 }

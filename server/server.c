@@ -147,23 +147,32 @@ void registerUser(Message* msg){
 	char* tokens;
 	time_t timer;
 	user* elem = malloc(sizeof(user));
-	tokens = strtok(data,",");
-	time(&timer);
-	elem->registration_date = timer;
-	//elem->name = malloc(strlen(tokens));
-	//strcpy(elem->name, tokens);
-	tokens = strtok(NULL,",");
-	elem->username = malloc(strlen(tokens));
-	strcpy(elem->username, tokens);
-	tokens = strtok(NULL,",");
-	elem->password = malloc(strlen(tokens));
-	strcpy(elem->password, tokens);
-	elem->fee = 0;
-	elem->mail_list = createList(NULL);
+	if((tokens = strtok(data,",")) != NULL){
+		time(&timer);
+		elem->registration_date = timer;
+		//elem->name = malloc(strlen(tokens));
+		//strcpy(elem->name, tokens);
+		if((tokens = strtok(NULL,",")) != NULL){
+			elem->username = malloc(strlen(tokens));
+			strcpy(elem->username, tokens);
+			if((tokens = strtok(NULL,",")) != NULL){
+				elem->password = malloc(strlen(tokens));
+				strcpy(elem->password, tokens);
+				elem->fee = 0;
+				elem->mail_list = createList(NULL);
 
-	addNode(users, elem, true);
-	printf("Registered User: %s\n", elem->username);
-	sendData(getClientFile(msg->referer), "register", "success", "");
+				addNode(users, elem, true);
+				printf("Registered User: %s\n", elem->username);
+				sendData(getClientFile(msg->referer), "register", "success", "");
+			}else{
+				sendData(getClientFile(msg->referer), "register", "error", "");
+			}
+		}else{
+			sendData(getClientFile(msg->referer), "register", "error", "");
+		}
+	}else{
+		sendData(getClientFile(msg->referer), "register", "error", "");
+	}
 }
 
 user* findUserByUsername(char* username){
@@ -183,10 +192,17 @@ void loginUser(Message* msg){
 	int finished = 0;
 	char* data = msg->body;
 	node* aux = users->head;
-	char* tokens = strtok(data,",");
+	char* tokens;
+	if((tokens = strtok(data,",")) == NULL){
+		sendData(getClientFile(msg->referer), "login", "error", "Bad Format");
+		return;
+	}
 	user* elem;
 	if((elem = findUserByUsername(tokens)) != NULL){
-		tokens = strtok(NULL,",");
+		if((tokens = strtok(NULL,",")) == NULL){
+			sendData(getClientFile(msg->referer), "login", "error", "Bad Format");
+			return;
+		}
 		if(strcmp(elem->password, tokens) == 0){
 			printf("User %s logued correctly\n", elem->username);
 			sendData(getClientFile(msg->referer), "login", "success", elem->username);

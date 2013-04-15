@@ -58,7 +58,11 @@ void recieveEmails(int num){
 			printf("Error on mail\n");
 			//perror("read");
 		} else if (error >= 1) {
-			printf("%d: From: %s, Subject: %s\n", i+1, msg->from, msg->header);
+			printf("%d: From: %s, Subject: %s Time: %s", i+1, msg->from, msg->header, ctime(&(msg->senttime)));
+			printf("Message:%s\n", msg->body);
+			if(msg->attachments[0] != '0'){
+				printf("Attachment: %s\n", msg->attachments);
+			}
 		}
 	}
 	free(msg);
@@ -145,7 +149,10 @@ void setLogin(char* name) {
 }
 
 void writeEmail() {
+	time_t sendtime;
+	time(&sendtime);
 	mail* elem = malloc(sizeof(mail));
+	int num;
 	printf("Ingrese destinatario\n");
 	scanf("%15s",elem->to);
 	strcpy(elem->from, username);
@@ -153,9 +160,16 @@ void writeEmail() {
 	scanf("%30s", elem->header);
 	printf("Ingrese el Mensaje\n");
 	scanf("%100s",elem->body);
-	printf("Ingrese el path del attachment, en caso de no existir dejar vacio\n");
-	scanf("%30s", elem->attachments);
+	printf("1: Agregar Attachment\n2: No Agregar Attachment\n");
+	scanf("%d",&num);
+	if(num == 1){
+		printf("Ingrese el path del attachment\n");
+		scanf("%30s", elem->attachments);
+	}else{
+		strcpy(elem->attachments, "0");
+	}
 	elem->read = 0;
+	elem->senttime = sendtime;
 	sendData("mail","send", "1");
 	printf("wrote: %d\n", (int)write(sender, elem, sizeof(mail)));
 	free(elem);
@@ -180,7 +194,7 @@ void readConsole() {
 		scanf("%d", &a);
 		if (a == 1) {
 			printf(
-					"Ingrese Usuario y Contraseña\n Separados por ',' de la forma Usuario,Contraseña\n");
+					"Ingrese Usuario y Contraseña\nSeparados por ',' de la forma Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData("login", "login", result);
 

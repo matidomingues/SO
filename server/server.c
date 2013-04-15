@@ -80,12 +80,6 @@ void listenForConnection(int fd){
 		free(info);
 		//perror("read");
 	}else if(status >=1){
-		printf("Recieved:\n");
-		printf("Protocol: %s\n", info->protocol);
-		printf("Method: %s\n", info->method);
-		printf("Resource: %s\n", info->resource);
-		printf("Referer: %i\n", info->referer);
-		printf("Body: %s\n", info->body);
 		pushMessage(info);
 	}
 }
@@ -165,7 +159,7 @@ void registerUser(Message* msg){
 	elem->password = malloc(strlen(tokens));
 	strcpy(elem->password, tokens);
 	elem->fee = 0;
-	elem->mail_list = NULL;
+	elem->mail_list = createList(NULL);
 
 	addNode(users, elem, true);
 	printf("Registered User: %s\n", elem->username);
@@ -207,6 +201,7 @@ void loginUser(Message* msg){
 }
 
 void sendAllMails(int client, user* elem){
+	printf("Sending mails of: %s\n", elem->username);
 	node* aux = elem->mail_list->head;
 	while(aux != NULL){
 		write(client, (mail*)aux->val, sizeof(mail));
@@ -218,9 +213,13 @@ void sendEmails(Message* msg){
 	user* elem = findUserByUsername(msg->body);
 	char* num;
 	int client = getClientFile(msg->referer);
-	sprintf(num,"%d",elem->mail_list->length);
-	sendData(client, "mail", "receive", (char*)num);
-	sendAllMails(client, elem);
+	if(elem->mail_list == NULL){
+		sendData(client, "mail", "receive", "0");
+	}else{
+		sprintf(num,"%d",elem->mail_list->length);
+		sendData(client, "mail", "receive", (char*)num);
+		sendAllMails(client, elem);
+	}
 }
 
 void recieveEmail(Message* msg){
@@ -242,8 +241,24 @@ void recieveEmail(Message* msg){
 		if(data == NULL){
 			sendData(client, "mail", "error", "Wrong Username\n");
 		}else{
+			printf("Recieved email from %s\n", info->from);
 			addNode(data->mail_list, info, true);
 			sendData(client, "mail", "success", "Mail Sent Correctly\n");
+			if(info->attachments[0] != '0'){
+				FILE *fp = fopen(info->attachments, "r");
+				if (fp == NULL) {
+					data->fee +=1;
+					printf("While opening file %s.\n", info->attachments);
+					perror("File open error");
+				}else{
+					struct stat st;
+					stat(info->attachments, &st);
+					int filesize = st.st_size;
+					data->fee += filesize;
+				}
+			}else{
+				data->fee +=1; 
+			}
 		}
 	}
 }
@@ -252,6 +267,7 @@ void sendUserFee(Message* msg){
 	char* num;
 	user* data = findUserByUsername(msg->body);
 	sprintf(num, "%f", data->fee);
+	printf("Sending %s fee\n", data->username);
 	sendData(getClientFile(msg->referer), "user", "fee", (char*)num);
 }
 

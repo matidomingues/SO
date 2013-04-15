@@ -84,8 +84,14 @@ void dispatchEvent(Message* msg) {
 	}else if(strcmp(msg->resource, "mail") == 0){
 		if(strcmp(msg->method, "receive") == 0){
 			recieveEmails(atoi(msg->body));
+		}else if(strcmp(msg->method, "success") == 0){
+			printf("%s\n", msg->body);
+		}else if(strcmp(msg->method, "error") == 0){
+			printf("%s\n", msg->body);
+		}else if(strcmp(msg->method, "continue") == 0){
+			printf("Continue with message\n");
 		}
-	}
+	} 
 }
 
 void listenForConnection() {
@@ -137,15 +143,19 @@ void setLogin(char* name) {
 void writeEmail() {
 	mail* elem = malloc(sizeof(mail));
 	printf("Ingrese destinatario\n");
-	scanf("%15s",&elem->to);
+	scanf("%15s",elem->to);
 	strcpy(elem->from, username);
 	printf("Ingrese el Asunto\n");
-	scanf("%30s", &elem->header);
+	scanf("%30s", elem->header);
 	printf("Ingrese el Mensaje\n");
-	scanf("%100s",&elem->body);
+	scanf("%100s",elem->body);
 	printf("Ingrese el path del attachment, en caso de no existir dejar vacio\n");
-	scanf("%30s", &elem->attachment);
+	scanf("%30s", elem->attachments);
 	elem->read = 0;
+	sendData("mail","send", "1");
+	printf("wrote: %d\n", (int)write(sender, elem, sizeof(mail)));
+	free(elem);
+	listenForConnection();
 }
 
 void grabNewEmails() {

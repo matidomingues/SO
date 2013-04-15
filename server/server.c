@@ -19,6 +19,7 @@ Task* tail;
 Client* clients;
 linked_list* users;
 fd_set active_fd_set;
+int reader;
 
 void createBasePipe(){
 	char route[16];
@@ -153,8 +154,8 @@ void registerUser(Message* msg){
 	tokens = strtok(data,",");
 	time(&timer);
 	elem->registration_date = timer;
-	elem->name = malloc(strlen(tokens));
-	strcpy(elem->name, tokens);
+	//elem->name = malloc(strlen(tokens));
+	//strcpy(elem->name, tokens);
 	tokens = strtok(NULL,",");
 	elem->username = malloc(strlen(tokens));
 	strcpy(elem->username, tokens);
@@ -220,20 +221,28 @@ void sendEmails(Message* msg){
 	sendAllMails(client, elem);
 }
 
-void recieveEmail(){
+void recieveEmail(Message* msg){
 	int status = 0;
 	user* data;
+	int client = getClientFile(msg->referer);
+	sendData(client,"mail", "continue", "");
 	mail* info = malloc(sizeof(mail));
 	if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
 		perror("select");
 	}
-	status = read(fd, info, sizeof(mail));
+	status = read(reader, info, sizeof(mail));
 	if(status <= 0){
 		free(info);
+		sendData(client, "mail", "error", "Mail Not Sent\n");
 		//perror("read");
 	}else if(status >=1){
 		data = findUserByUsername(info->to);
-		addNode(data->mail_list, info, true);
+		if(data == NULL){
+			sendData(client, "mail", "error", "Wrong Username\n");
+		}else{
+			addNode(data->mail_list, info, true);
+			sendData(client, "mail", "success", "Mail Sent Correctly\n");
+		}
 	}
 }
 
@@ -252,7 +261,7 @@ void executeActions(){
 			}
 		}else if(strcmp(msg->resource, "mail") == 0){
 			if(strcmp(msg->method, "send") == 0){
-				recieveEmail();
+				recieveEmail(msg);
 			}else if(strcmp(msg->method, "receive") == 0){
 				sendEmails(msg);
 			}
@@ -269,14 +278,24 @@ void writeResponse(int referer, Message* msg){
 	}
 }
 
+void dumpAll() {
+	dumpUsersToCSVFile(users);
+	int i;
+	node* current = users->head;
+	for (i = 0; i < length(users); i++) {
+		dumpMailsToCSVFile(((user*) (current->val))->mail_list, (user*)current->val);
+		current = current->next;
+	}
+}
+
 int main() {
 	int fd;
 	head = tail = NULL;
 	clients = NULL;
 	users = createList(NULL);
-	init_userlist("csv/users.csv", users);
+	initUserList("csv/users.csv", users);
 	createBasePipe();
-	fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
+	reader = fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
 	FD_ZERO (&active_fd_set);
     FD_SET (fd, &active_fd_set);
 	printf("Listening on: /tmp/serv.xxxxx\n");

@@ -35,7 +35,7 @@ void addNode(linked_list* list, void* val, bool addtoend) {
 	new_node->val = val;
 	new_node->next = NULL;
 
-	if (isempty(list)) { //Primer elemento
+	if (isEmpty(list)) { //Primer elemento
 		//printf("Adding first element.\n");
 		list->head = list->last = new_node;
 	} else {
@@ -52,8 +52,8 @@ void addNode(linked_list* list, void* val, bool addtoend) {
 	(list->length)++;
 }
 
-void removefirstnode(linked_list* list) {
-	if (isempty(list)) {
+void removeFirstNode(linked_list* list) {
+	if (isEmpty(list)) {
 		printf("Cannot remove first node, list is empty.\n");
 		return;
 	}
@@ -72,9 +72,9 @@ void removefirstnode(linked_list* list) {
 	list->length--;
 }
 
-void removelastnode(linked_list* list) {
+void removeLastNode(linked_list* list) {
 
-	if (isempty(list)) {
+	if (isEmpty(list)) {
 		//printf("Cannot remove last node, list is empty.\n");
 		return;
 	}
@@ -103,7 +103,7 @@ void removelastnode(linked_list* list) {
 	free(current);
 }
 
-void removenode(linked_list* list, node* n) {
+void removeNode(linked_list* list, node* n) {
 
 }
 
@@ -123,13 +123,13 @@ node* search(linked_list* list, void* val) {
 	return n;
 }
 
-bool isempty(linked_list* list) {
+bool isEmpty(linked_list* list) {
 	return list->length == 0;
 }
 
 void printList(linked_list* list) {
 
-	if (isempty(list)) {
+	if (isEmpty(list)) {
 		printf("List is empty.\n");
 		return;
 	}

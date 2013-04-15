@@ -11,17 +11,39 @@
 
 #define MAXLINELEN 1024	/* Maximum line length */
 #define MAXFLDS 5	/* Maximum number of fields */
-#define MAXFLDLEN 30	/* Longest field + 1 = 31 byte field */
+#define MAXFLDLEN 30	/* Longest field + 1 = 31 byte field */	//TODO:Estirar esto si no alcanza!
 
 /****************************************************/
 /* void parseline()									*/
-/* Splits line into fields, as delimited by 'delim 	*/
+/* Splits line into fields, as delimited by 'delim'	*/
 /****************************************************/
 void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
 		int *fieldcount);
 
-void init_userlist(const char* filename, linked_list* userlist);
+/****************************************************/
+/* void init_userlist()								*/
+/* Initializes user structure					 	*/
+/****************************************************/
 
-void init_messagelist(const char* username, linked_list* messagelist);
+void initUserList(const char* filename, linked_list* userlist);
 
-void addUserToCsv(user* u, char* filename);
+/****************************************************/
+/* void init_messagelist()								*/
+/* Initializes mail structure					 	*/
+/****************************************************/
+
+void initMailList(const char* username, linked_list* messagelist);
+
+/****************************************************/
+/* void addUserToCsv()								*/
+/* Loads user into users.csv					 	*/
+/****************************************************/
+
+void addUserToCsv(const user* u, const char* filename);
+
+/****************************************************/
+/* void addMailToUser()								*/
+/* Adds user's emails to it's .csv file			 	*/
+/****************************************************/
+
+void addMailToUser(user* u, mail* m);

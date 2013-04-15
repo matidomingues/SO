@@ -1,6 +1,6 @@
 #include "csv.h"
 
-void init_userlist(const char* filename, linked_list* userlist) {
+void initUserList(const char* filename, linked_list* userlist) {
 	char line[MAXLINELEN] = { 0x0 };
 	int fieldcount = 0;
 	char arr[MAXFLDS][MAXFLDLEN] = { { 0x0 } };
@@ -41,7 +41,7 @@ void init_userlist(const char* filename, linked_list* userlist) {
 		u->fee = atof(arr[4]);
 
 		linked_list* maillist = createList(NULL );
-		init_messagelist(u->username, maillist);
+		initMailList(u->username, maillist);
 
 		u->mail_list = maillist;
 
@@ -50,7 +50,7 @@ void init_userlist(const char* filename, linked_list* userlist) {
 	fclose(fp); /* Close file */
 }
 
-void init_messagelist(const char* username, linked_list* messagelist) {
+void initMailList(const char* username, linked_list* messagelist) {
 	char line[MAXLINELEN] = { 0x0 };
 	int fieldcount = 0;
 	char arr[MAXFLDS][MAXFLDLEN] = { { 0x0 } };
@@ -117,7 +117,27 @@ void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
 	*fieldcount = field;
 }
 
-void addUserToCsv(user* u, char* filename) {
+void addUserToCsv(const user* u, const char* filename) {
+	const char* mode = "a"; /*a=append */
+
+	FILE *fp = fopen(filename, mode); /* Open file */
+
+	if (fp == NULL ) {
+		printf("While opening file %s.\n", filename);
+		perror("File open error");
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(fp, "\n%s;%s;%d;%d;%f", u->name, u->password,
+			(int) u->registration_date, (int) u->modification_date, u->fee);
+	fclose(fp);
+}
+
+void addMailToUser(user* u, mail* m) {
+	char filename[256];
+	strcpy(filename, "csv/mails/");
+	strcat(filename, u->name);
+	strcat(filename, ".csv");
 
 	const char* mode = "a"; /*a=append */
 
@@ -129,7 +149,8 @@ void addUserToCsv(user* u, char* filename) {
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(fp, "\n%s;%s;%d;%d;%f", u->name, u->password, (int)u->registration_date,
-			(int)u->modification_date, u->fee);
+	fprintf(fp, "\n%s;%s;%s;%s;%p", m->from, m->to, m->header, m->body,
+			(void*) m->attachments); //TODO: Ver void* cast
+	//addNode(u->mail_list, m, 1);
 	fclose(fp);
 }

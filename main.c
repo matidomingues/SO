@@ -1,6 +1,8 @@
 #include "includes\csv.h"
 #include "includes\linkedlist.h"
 
+linked_list* users;
+
 int main() {
 
 	/****************************************************/
@@ -30,28 +32,28 @@ int main() {
 	/****************************************************/
 	/* File Handling Tests								*/
 	/****************************************************/
-
-	linked_list* userlist = createList(NULL );
-	initUserList("csv/users.csv", userlist);
+	users = createList(NULL);
+	initUserList("csv/users.csv", users);
 
 	//creo usuario
 	user* u = (user*) malloc(sizeof(user));
-	u->username = "username2";
+	u->username = "Pepe";
 	u->password = "password";
 	u->registration_date = (time_t) 1365535381;
 	u->modification_date = (time_t) 1365535381;
 	u->fee = 2;
 
 	//Agrego el usuario a users
-	addNode(userlist, u, 1);
+	addNode(users, u, 1);
 
 	//lo agrego al csv
 	addUserToCSV(u, "csv/users.csv");
 
-	dumpUsersToCSVFile(userlist);
+	dumpAll();
+	/*dumpUsersToCSVFile(users);
 
-	dumpMailsToCSVFile(((user*) (userlist->head->val))->mail_list,
-			userlist->head->val);
+	dumpMailsToCSVFile(((user*) (users->head->val))->mail_list,
+			users->head->val);*/
 
 	/*mail* m = (mail*) malloc(sizeof(mail));
 	 m->from = "User1";
@@ -76,4 +78,16 @@ int main() {
 	 printf("%d", (list->head)->val);
 	 printf("%d", (list->last)->val);*/
 	return 0;
+}
+
+void dumpAll() {
+	printf("Dumping data \n");
+	dumpUsersToCSVFile(users);
+	int i;
+	node* current = users->head;
+	for (i = 0; i < length(users); i++) {
+		dumpMailsToCSVFile(((user*) (current->val))->mail_list, (user*)current->val);
+		current = current->next;
+	}
+	exit(0);
 }

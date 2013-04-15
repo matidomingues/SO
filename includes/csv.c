@@ -139,12 +139,12 @@ void addMailToUser(char* filename, mail* m) {
 }
 
 void dumpUsersToCSVFile(linked_list* users) {
-	FILE* fp = fopen("../csv/users.csv", "w");
+	FILE* fp = fopen("csv/users.csv", "w");
 	fclose(fp);
 	node* current = users->head;
 	int i;
 	for (i = 0; i < length(users); i++) {
-		addUserToCSV(current->val, "../csv/users.csv");
+		addUserToCSV(current->val, "csv/users.csv");
 		current = current->next;
 	}
 	fclose(fp);
@@ -152,13 +152,17 @@ void dumpUsersToCSVFile(linked_list* users) {
 
 void dumpMailsToCSVFile(linked_list* mails, user* u) {
 	char filename[128];
-	strcpy(filename, "../csv/mails/");
+	strcpy(filename, "csv/mails/");
 	strcat(filename, u->username);
 	strcat(filename, ".csv");
 
 	FILE *fp = fopen(filename, "w");
 	fclose(fp);
+	if (mails == NULL ) {
+		return;
+	}
 	node* current = mails->head;
+
 	int i;
 	for (i = 0; i < length(mails); i++) {
 		addMailToUser(filename, current->val);

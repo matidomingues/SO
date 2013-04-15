@@ -14,6 +14,8 @@
 #include "../includes/csv.h"
 #include "../includes/mail.h"
 
+#include <signal.h>
+
 Task* head;
 Task* tail;
 Client* clients;
@@ -246,6 +248,13 @@ void recieveEmail(Message* msg){
 	}
 }
 
+void sendUserFee(Message* msg){
+	char* num;
+	user* data = findUserByUsername(msg->body);
+	sprintf(num, "%f", data->fee);
+	sendData(getClientFile(msg->referer), "user", "fee", (char*)num);
+}
+
 void executeActions(){
 	Message* msg;
 	while((msg = popMessage()) != NULL){
@@ -265,6 +274,10 @@ void executeActions(){
 			}else if(strcmp(msg->method, "receive") == 0){
 				sendEmails(msg);
 			}
+		}else if(strcmp(msg->resource, "user") == 0){
+			if(strcmp(msg->method, "fee") == 0){
+				sendUserFee(msg);
+			}
 		}
 	}
 }
@@ -278,7 +291,9 @@ void writeResponse(int referer, Message* msg){
 	}
 }
 
-void dumpAll() {
+void dumpAll(int sig) {
+	signal(sig,SIG_IGN);
+	printf("Dumping data \n");
 	dumpUsersToCSVFile(users);
 	int i;
 	node* current = users->head;
@@ -286,6 +301,7 @@ void dumpAll() {
 		dumpMailsToCSVFile(((user*) (current->val))->mail_list, (user*)current->val);
 		current = current->next;
 	}
+	exit(0);
 }
 
 int main() {
@@ -299,6 +315,7 @@ int main() {
 	FD_ZERO (&active_fd_set);
     FD_SET (fd, &active_fd_set);
 	printf("Listening on: /tmp/serv.xxxxx\n");
+	signal(SIGINT, dumpAll);
 	while(1){
 		listenForConnection(fd);
 		executeActions();

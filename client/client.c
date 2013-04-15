@@ -91,7 +91,11 @@ void dispatchEvent(Message* msg) {
 		}else if(strcmp(msg->method, "continue") == 0){
 			printf("Continue with message\n");
 		}
-	} 
+	}else if(strcmp(msg->resource, "user") == 0){
+		if(strcmp(msg->method, "fee") == 0){
+			printf("Tarifacion: %s\n", msg->body);
+		}
+	}
 }
 
 void listenForConnection() {
@@ -162,6 +166,10 @@ void grabNewEmails() {
 	sendData("mail", "receive", username);
 }
 
+void getFee(){
+	sendData("user", "fee", username);
+}
+
 void readConsole() {
 	int a;
 	char result[30];
@@ -187,11 +195,14 @@ void readConsole() {
 		printf("Ingrese Numero de Opcion:\n");
 		printf("1: Enviar Email\n");
 		printf("2: Recibir Emails\n");
+		printf("3: Consultar Tarifacion\n");
 		scanf("%d", &a);
 		if (a == 1) {
 			writeEmail();
 		} else if (a == 2) {
 			grabNewEmails();
+		} else if( a == 3){
+			getFee();
 		}
 	}
 }

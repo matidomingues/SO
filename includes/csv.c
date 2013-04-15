@@ -89,7 +89,9 @@ void initMailList(const char* username, linked_list* maillist) {
 
 		strcpy(m->body, arr[3]);
 
-		strcpy(m->attachments, arr[4]); //TODO: Si es un path, cambiar el tipo a char* y hacer strcpy
+		strcpy(m->attachments, arr[4]);
+
+		m->senttime = (time_t) atoi(arr[5]);
 
 		addNode(maillist, m, 1);
 	}
@@ -131,18 +133,18 @@ void addMailToUser(char* filename, mail* m) {
 		perror("File open error");
 		exit(EXIT_FAILURE);
 	}
-	fprintf(fp, "%s;%s;%s;%s;%s", m->from, m->to, m->header, m->body,
-			m->attachments); //TODO: Por que aca no hace falta \n???
+	fprintf(fp, "%s;%s;%s;%s;%s;%d", m->from, m->to, m->header, m->body,
+			m->attachments, (int) m->senttime);
 	fclose(fp);
 }
 
 void dumpUsersToCSVFile(linked_list* users) {
-	FILE* fp = fopen("csv/users.csv", "w");
+	FILE* fp = fopen("../csv/users.csv", "w");
 	fclose(fp);
 	node* current = users->head;
 	int i;
 	for (i = 0; i < length(users); i++) {
-		addUserToCSV(current->val, "csv/users.csv");
+		addUserToCSV(current->val, "../csv/users.csv");
 		current = current->next;
 	}
 	fclose(fp);
@@ -150,7 +152,7 @@ void dumpUsersToCSVFile(linked_list* users) {
 
 void dumpMailsToCSVFile(linked_list* mails, user* u) {
 	char filename[128];
-	strcpy(filename, "csv/mails/");
+	strcpy(filename, "../csv/mails/");
 	strcat(filename, u->username);
 	strcat(filename, ".csv");
 

@@ -6,8 +6,9 @@ typedef struct mail {
 	char to[15];
 	char header[30];
 	char body[100];
-	char attachments[30];	//TODO Check attachment type
+	char attachments[30];
 	int read;
+	time_t senttime;
 } mail;
 
 #endif

@@ -30,19 +30,16 @@ int main() {
 	/****************************************************/
 	/* File Handling Tests								*/
 	/****************************************************/
-	/*
-	 linked_list* userlist = createList(NULL );
-	 init_userlist("csv/users.csv", userlist);
 
-	 user* u = (user*) malloc(sizeof(user));
-	 u->name = "username3";
-	 u->password = "Pass";
-	 u->registration_date = (time_t) 1365535381;
-	 u->modification_date = (time_t) 1365535381;
-	 u->fee = 1.0000;
-	 addUserToCsv(u, "csv/users.csv");
+	linked_list* userlist = createList(NULL );
+	initUserList("csv/users.csv", userlist);
 
-	 mail* m = (mail*) malloc(sizeof(mail));
+	dumpUsersToCSVFile(userlist);
+
+	dumpMailsToCSVFile(((user*) (userlist->head->val))->mail_list,
+	 userlist->head->val);
+
+	/*mail* m = (mail*) malloc(sizeof(mail));
 	 m->from = "User1";
 	 m->to = "User2";
 	 m->header = "Title";

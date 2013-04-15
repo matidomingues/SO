@@ -6,9 +6,7 @@ void initUserList(const char* filename, linked_list* userlist) {
 	char arr[MAXFLDS][MAXFLDLEN] = { { 0x0 } };
 	int linecount = 0;
 
-	const char* mode = "r"; /*r=read */
-
-	FILE *fp = fopen(filename, mode); /* Open file */
+	FILE *fp = fopen(filename, "r");
 
 	if (fp == NULL ) {
 		printf("While opening file %s.\n", filename);
@@ -16,19 +14,19 @@ void initUserList(const char* filename, linked_list* userlist) {
 		exit(EXIT_FAILURE);
 	}
 
-	struct user* u;
+	user* u;
 
 	while (fgets(line, sizeof(line), fp) != 0) /* Read a line, place it in line*/
 	{
-		int i = 0;
+		//int i = 0;
 		linecount++;
 		//printf("Record #%d\n", linecount);
 		parseline(line, ";", arr, &fieldcount); /* Split line into fields, save fields into arr */
 
-		for (i = 0; i < fieldcount; i++) { /* Print field */
-			//printf("\tField #%d=%s\n", i, arr[i]);
-		}
-		u = (struct user*) malloc(sizeof(struct user)); /*reserve space for user*/
+		//for (i = 0; i < fieldcount; i++) { /* Print field */
+		//	printf("\tField #%d=%s\n", i, arr[i]);
+		//}
+		u = (user*) malloc(sizeof(user)); /*reserve space for user*/
 
 		u->username = malloc(sizeof(arr[0]));
 		strcpy(u->username, arr[0]);
@@ -47,23 +45,21 @@ void initUserList(const char* filename, linked_list* userlist) {
 
 		addNode(userlist, u, 1);
 	}
-	fclose(fp); /* Close file */
+	fclose(fp);
 }
 
-void initMailList(const char* username, linked_list* messagelist) {
+void initMailList(const char* username, linked_list* maillist) {
 	char line[MAXLINELEN] = { 0x0 };
 	int fieldcount = 0;
 	char arr[MAXFLDS][MAXFLDLEN] = { { 0x0 } };
 	int linecount = 0;
 
-	const char* mode = "r"; /*r=read */
-
-	char filename[256];
+	char filename[128];
 	strcpy(filename, "csv/mails/");
 	strcat(filename, username);
 	strcat(filename, ".csv");
 
-	FILE *fp = fopen(filename, mode); /* Open file */
+	FILE *fp = fopen(filename, "r");
 
 	if (fp == NULL ) {
 		printf("While opening file %s.\n", filename);
@@ -71,19 +67,19 @@ void initMailList(const char* username, linked_list* messagelist) {
 		exit(EXIT_FAILURE);
 	}
 
-	struct mail* m;
+	mail* m;
 
 	while (fgets(line, sizeof(line), fp) != 0) /* Read a line, place it in line*/
 	{
-		int i = 0;
+		//int i = 0;
 		linecount++;
 		//printf("Record #%d\n", linecount);
 		parseline(line, ";", arr, &fieldcount); /* Split line into fields, save fields into arr */
 
-		for (i = 0; i < fieldcount; i++) { /* Print field */
-			//printf("\tField #%d=%s\n", i, arr[i]);
-		}
-		m = (struct mail*) malloc(sizeof(struct mail)); /*reserve space for mail*/
+		//for (i = 0; i < fieldcount; i++) { /* Print field */
+		//printf("\tField #%d=%s\n", i, arr[i]);
+		//}
+		m = (mail*) malloc(sizeof(mail)); /*reserve space for mail*/
 
 		m->from = malloc(sizeof(arr[0]));
 		strcpy(m->from, arr[0]);
@@ -97,11 +93,12 @@ void initMailList(const char* username, linked_list* messagelist) {
 		m->body = malloc(sizeof(arr[3]));
 		strcpy(m->body, arr[3]);
 
-		m->attachments = arr[4]; //TODO: Si es un path, cambiar el tipo a char* y hacer strcpy
+		m->attachments = malloc(sizeof(arr[4]));
+		strcpy(m->attachments, arr[4]);
 
-		addNode(messagelist, m, 1);
+		addNode(maillist, m, 1);
 	}
-	fclose(fp); /* Close file */
+	fclose(fp);
 }
 
 void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
@@ -117,10 +114,8 @@ void parseline(char *line, const char *delim, char arr[][MAXFLDLEN],
 	*fieldcount = field;
 }
 
-void addUserToCsv(const user* u, const char* filename) {
-	const char* mode = "a"; /*a=append */
-
-	FILE *fp = fopen(filename, mode); /* Open file */
+void addUserToCSV(const user* u, const char* filename) {
+	FILE *fp = fopen(filename, "a");
 
 	if (fp == NULL ) {
 		printf("While opening file %s.\n", filename);
@@ -128,29 +123,49 @@ void addUserToCsv(const user* u, const char* filename) {
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(fp, "\n%s;%s;%d;%d;%f", u->name, u->password,
+	fprintf(fp, "%s;%s;%d;%d;%f\n", u->username, u->password,
 			(int) u->registration_date, (int) u->modification_date, u->fee);
 	fclose(fp);
 }
 
-void addMailToUser(user* u, mail* m) {
-	char filename[256];
-	strcpy(filename, "csv/mails/");
-	strcat(filename, u->name);
-	strcat(filename, ".csv");
-
-	const char* mode = "a"; /*a=append */
-
-	FILE *fp = fopen(filename, mode); /* Open file */
+void addMailToUser(char* filename, mail* m) {
+	FILE *fp = fopen(filename, "a");
 
 	if (fp == NULL ) {
 		printf("While opening file %s.\n", filename);
 		perror("File open error");
 		exit(EXIT_FAILURE);
 	}
+	fprintf(fp, "%s;%s;%s;%s;%s", m->from, m->to, m->header, m->body,
+			m->attachments);	//TODO: Por que aca no hace falta \n???
+	fclose(fp);
+}
 
-	fprintf(fp, "\n%s;%s;%s;%s;%p", m->from, m->to, m->header, m->body,
-			(void*) m->attachments); //TODO: Ver void* cast
-	//addNode(u->mail_list, m, 1);
+void dumpUsersToCSVFile(linked_list* users) {
+	FILE* fp = fopen("csv/users.csv", "w");
+	fclose(fp);
+	node* current = users->head;
+	int i;
+	for (i = 0; i < length(users); i++) {
+		addUserToCSV(current->val, "csv/users.csv");
+		current = current->next;
+	}
+	fclose(fp);
+}
+
+void dumpMailsToCSVFile(linked_list* mails, user* u) {
+	char filename[128];
+	strcpy(filename, "csv/mails/");
+	strcat(filename, u->username);
+	strcat(filename, ".csv");
+
+	FILE *fp = fopen(filename, "w");
+	fclose(fp);
+	node* current = mails->head;
+	int i;
+	for (i = 0; i < length(mails); i++) {
+		addMailToUser(filename, current->val);
+		current = current->next;
+	}
 	fclose(fp);
 }

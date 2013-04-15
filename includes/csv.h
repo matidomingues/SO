@@ -12,7 +12,6 @@
 #define MAXLINELEN 1024	/* Maximum line length */
 #define MAXFLDS 5	/* Maximum number of fields */
 #define MAXFLDLEN 30	/* Longest field + 1 = 31 byte field */	//TODO:Estirar esto si no alcanza!
-
 /****************************************************/
 /* void parseline()									*/
 /* Splits line into fields, as delimited by 'delim'	*/
@@ -36,14 +35,28 @@ void initMailList(const char* username, linked_list* messagelist);
 
 /****************************************************/
 /* void addUserToCsv()								*/
-/* Loads user into users.csv					 	*/
+/* Loads single user into users.csv					 	*/
 /****************************************************/
 
-void addUserToCsv(const user* u, const char* filename);
+void addUserToCSV(const user* u, const char* filename);
 
 /****************************************************/
 /* void addMailToUser()								*/
 /* Adds user's emails to it's .csv file			 	*/
 /****************************************************/
 
-void addMailToUser(user* u, mail* m);
+void addMailToUser(char* filename, mail* m);
+
+/****************************************************/
+/* void dumpUserstoCSVFile()						*/
+/* Dumps all users into users.csv file			 	*/
+/****************************************************/
+
+void dumpUsersToCSVFile(linked_list* users);
+
+/****************************************************/
+/* void dumpMailsToCSVFile()						*/
+/* Dumps all mail into users' .csv file			 	*/
+/****************************************************/
+
+void dumpMailsToCSVFile(linked_list* mails, user* u);

@@ -5,7 +5,6 @@
 #include <time.h>
 
 typedef struct user {
-	char* name;
 	char* username;
 	char* password;
 	time_t registration_date;

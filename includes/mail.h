@@ -9,5 +9,5 @@ typedef struct mail {
 	char* to;
 	char* header;
 	char* body;
-	void* attachments;	//TODO Check attachment type
+	char* attachments;	//TODO Check attachment type
 } mail;

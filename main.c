@@ -34,10 +34,24 @@ int main() {
 	linked_list* userlist = createList(NULL );
 	initUserList("csv/users.csv", userlist);
 
+	//creo usuario
+	user* u = (user*) malloc(sizeof(user));
+	u->username = "username2";
+	u->password = "password";
+	u->registration_date = (time_t) 1365535381;
+	u->modification_date = (time_t) 1365535381;
+	u->fee = 2;
+
+	//Agrego el usuario a users
+	addNode(userlist, u, 1);
+
+	//lo agrego al csv
+	addUserToCSV(u, "csv/users.csv");
+
 	dumpUsersToCSVFile(userlist);
 
 	dumpMailsToCSVFile(((user*) (userlist->head->val))->mail_list,
-	 userlist->head->val);
+			userlist->head->val);
 
 	/*mail* m = (mail*) malloc(sizeof(mail));
 	 m->from = "User1";

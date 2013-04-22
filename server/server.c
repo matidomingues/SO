@@ -13,30 +13,25 @@
 #include "../includes/linkedlist.h"
 #include "../includes/csv.h"
 #include "../includes/mail.h"
+#include "../includes/transporter.h"
 
 #include <signal.h>
+#include <pthread.h>
+
+static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 Task* head;
 Task* tail;
-Client* clients;
 linked_list* users;
-fd_set active_fd_set;
 int reader;
 
-void createBasePipe(){
-	char route[16];
-	strcpy(route, "/tmp/serv.xxxxx");
-	mkfifo(route,S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+static void
+transporter(int pid){
 }
 
 Task* newTaskNode(){
 	Task* task = malloc(sizeof(Task));
 	return task;
-}
-
-Client* newClientNode(){
-	Client* client = malloc(sizeof(Client));
-	return client;
 }
 
 void pushMessage(Message* msg){
@@ -64,36 +59,9 @@ Message* popMessage(){
 	return msg;
 }
 
-Message* prepareMessage(){
-	Message* info = (Message*) malloc(sizeof(Message)); 
-	return info;
-}
 
-void listenForConnection(int fd){
-	int status = 0;
-	Message* info = malloc(sizeof(Message));
-	if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
-		perror("select");
-	}
-	status = read(fd, info, sizeof(Message));
-	if(status <= 0){
-		free(info);
-		//perror("read");
-	}else if(status >=1){
-		pushMessage(info);
-	}
-}
-
-char* getFullPath(int id){
-	char pid[7];
-	char* route = malloc(sizeof(char)*16);
-	sprintf(pid,"%d", id);
-	strcpy(route, "/tmp/serv.");
-	strcat(route,pid);
-	return route;
-}
-
-Message* fillMessageData(Message* msg, char* method, char* resource, char* body){
+Message* fillMessageData(char* resource, char* method, char* body){
+	Message* msg = malloc(sizeof(Message)); 
 	strcpy(msg->protocol, "TPSO 0.12");
 	strcpy(msg->method, method);
 	strcpy(msg->resource, resource);
@@ -103,44 +71,6 @@ Message* fillMessageData(Message* msg, char* method, char* resource, char* body)
 	return msg;
 
 }
-
-void sendData(int fd, char* resource, char* method, char* body){
-	int status;
-	Message* msg = prepareMessage();
-	msg = fillMessageData(msg, method, resource, body);
-	while ((status = write(fd, msg, sizeof(Message))) == 0){
-		printf("paso2\n");
-	}
-	if(status == -1){
-		printf("ERROR ON PIPE write\n");
-	}
-	free(msg);
-}
-
-void registerClient(int referer){
-	char* route = getFullPath(referer);
-	printf("%s\n", route);
-	int fd = open(route, O_WRONLY | O_NONBLOCK);
-	Client* client = newClientNode();
-	client->pid = referer;
-	client->fd = fd;
-	client->next = clients;
-	clients = client;
-	printf("Registering client %d\n", referer);
-	sendData(fd, "client", "success", "");
-}
-
-int getClientFile(int pid){
-	Client* aux = clients;
-	while(aux != NULL){
-		if(aux->pid == pid){
-			return aux->fd;
-		}
-	}
-	return 0;
-}
-
-
 
 void registerUser(Message* msg){
 	char* data = msg->body;
@@ -163,15 +93,15 @@ void registerUser(Message* msg){
 
 				addNode(users, elem, true);
 				printf("Registered User: %s\n", elem->username);
-				sendData(getClientFile(msg->referer), "register", "success", "");
+				sendData(msg->referer, fillMessageData("register", "success", ""), sizeof(Message));
 			}else{
-				sendData(getClientFile(msg->referer), "register", "error", "");
+				sendData(msg->referer, fillMessageData("register", "error", ""), sizeof(Message));
 			}
 		}else{
-			sendData(getClientFile(msg->referer), "register", "error", "");
+			sendData(msg->referer, fillMessageData("register", "error", ""), sizeof(Message));
 		}
 	}else{
-		sendData(getClientFile(msg->referer), "register", "error", "");
+		sendData(msg->referer, fillMessageData("register", "error", ""), sizeof(Message));
 	}
 }
 
@@ -194,25 +124,25 @@ void loginUser(Message* msg){
 	node* aux = users->head;
 	char* tokens;
 	if((tokens = strtok(data,",")) == NULL){
-		sendData(getClientFile(msg->referer), "login", "error", "Bad Format");
+		sendData(msg->referer, fillMessageData("login", "error", "Bad Format"), sizeof(Message));
 		return;
 	}
 	user* elem;
 	if((elem = findUserByUsername(tokens)) != NULL){
 		if((tokens = strtok(NULL,",")) == NULL){
-			sendData(getClientFile(msg->referer), "login", "error", "Bad Format");
+			sendData(msg->referer, fillMessageData("login", "error", "Bad Format"), sizeof(Message));
 			return;
 		}
 		if(strcmp(elem->password, tokens) == 0){
 			printf("User %s logued correctly\n", elem->username);
-			sendData(getClientFile(msg->referer), "login", "success", elem->username);
+			sendData(msg->referer, fillMessageData("login", "success", elem->username), sizeof(Message));
 		}else{
 			printf("Incorrect password, User: %s\n", elem->username);
-			sendData(getClientFile(msg->referer), "login", "error", "Incorrect Password");
+			sendData(msg->referer, fillMessageData("login", "error", "Incorrect Password"), sizeof(Message));
 		}
 	}else{
 		printf("Incorrect Username");
-		sendData(getClientFile(msg->referer), "login", "error", "Incorrect Username");
+		sendData(msg->referer, fillMessageData("login", "error", "Incorrect Username"), sizeof(Message));
 	}
 }
 
@@ -220,7 +150,7 @@ void sendAllMails(int client, user* elem){
 	printf("Sending mails of: %s\n", elem->username);
 	node* aux = elem->mail_list->head;
 	while(aux != NULL){
-		write(client, (mail*)aux->val, sizeof(mail));
+		sendData(client, (mail*)aux->val, sizeof(mail));
 		aux = aux->next;
 	}
 }
@@ -228,38 +158,31 @@ void sendAllMails(int client, user* elem){
 void sendEmails(Message* msg){
 	user* elem = findUserByUsername(msg->body);
 	char* num;
-	int client = getClientFile(msg->referer);
 	if(elem->mail_list == NULL){
-		sendData(client, "mail", "receive", "0");
+		sendData(msg->referer, fillMessageData("mail", "receive", "0"), sizeof(mail));
 	}else{
 		sprintf(num,"%d",elem->mail_list->length);
-		sendData(client, "mail", "receive", (char*)num);
-		sendAllMails(client, elem);
+		sendData(msg->referer, fillMessageData("mail", "receive", (char*)num), sizeof(Message));
+		sendAllMails(msg->referer, elem);
 	}
 }
 
 void recieveEmail(Message* msg){
 	int status = 0;
 	user* data;
-	int client = getClientFile(msg->referer);
-	sendData(client,"mail", "continue", "");
-	mail* info = malloc(sizeof(mail));
-	if(select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) <0){
-		perror("select");
-	}
-	status = read(reader, info, sizeof(mail));
-	if(status <= 0){
-		free(info);
-		sendData(client, "mail", "error", "Mail Not Sent\n");
+	sendData(msg->referer, fillMessageData("mail", "continue", ""), sizeof(Message));
+	mail* info = (mail*)listenMessage(0, sizeof(mail));
+	if(info == NULL){
+		sendData(msg->referer, fillMessageData("mail", "error", "Mail Not Sent\n"), sizeof(Message));
 		//perror("read");
-	}else if(status >=1){
+	}else if(info != NULL){
 		data = findUserByUsername(info->to);
 		if(data == NULL){
-			sendData(client, "mail", "error", "Wrong Username\n");
+			sendData(msg->referer, fillMessageData("mail", "error", "Wrong Username\n"), sizeof(Message));
 		}else{
 			printf("Recieved email from %s\n", info->from);
 			addNode(data->mail_list, info, true);
-			sendData(client, "mail", "success", "Mail Sent Correctly\n");
+			sendData(msg->referer, fillMessageData("mail", "success", "Mail Sent Correctly\n"), sizeof(Message));
 			if(info->attachments[0] != '0'){
 				FILE *fp = fopen(info->attachments, "r");
 				if (fp == NULL) {
@@ -284,7 +207,7 @@ void sendUserFee(Message* msg){
 	user* data = findUserByUsername(msg->body);
 	sprintf(num, "%f", data->fee);
 	printf("Sending %s fee\n", data->username);
-	sendData(getClientFile(msg->referer), "user", "fee", (char*)num);
+	sendData(msg->referer, fillMessageData("user", "fee", (char*)num), sizeof(Message));
 }
 
 void executeActions(){
@@ -292,7 +215,8 @@ void executeActions(){
 	while((msg = popMessage()) != NULL){
 		if(strcmp(msg->resource, "client") == 0){
 			if(strcmp(msg->method, "register") == 0){
-				registerClient(msg->referer);
+				openClient(msg->referer);
+				sendData(msg->referer, fillMessageData("success", "client", ""), sizeof(Message));
 			}
 		}else if(strcmp(msg->resource, "login") == 0){
 			if(strcmp(msg->method, "register") == 0){
@@ -314,14 +238,7 @@ void executeActions(){
 	}
 }
 
-void writeResponse(int referer, Message* msg){
-	int fd = getClientFile(referer);
-	int status = 0;
-	while((status = write(fd, msg, sizeof(Message)))<=0);
-	if(status > 0){
-		printf("Wrote Successfully\n");
-	}
-}
+
 
 void dumpAll(int sig) {
 	signal(sig,SIG_IGN);
@@ -338,18 +255,18 @@ void dumpAll(int sig) {
 
 int main() {
 	int fd;
+	Message* data;
 	head = tail = NULL;
-	clients = NULL;
 	users = createList(NULL);
 	initUserList("csv/users.csv", users);
-	createBasePipe();
-	reader = fd = open("/tmp/serv.xxxxx", O_RDONLY | O_NONBLOCK);
-	FD_ZERO (&active_fd_set);
-    FD_SET (fd, &active_fd_set);
+	createConnection(0);
 	printf("Listening on: /tmp/serv.xxxxx\n");
 	signal(SIGINT, dumpAll);
 	while(1){
-		listenForConnection(fd);
+		data = (Message*)listenMessage(0, sizeof(Message));
+		if(data != NULL){
+			pushMessage(data);
+		}
 		executeActions();
 	}
 	return 1;

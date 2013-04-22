@@ -68,7 +68,15 @@ void recieveEmails(int num){
 	free(msg);
 }
 
+void printMessage(Message* msg){
+	printf("Resource: %s\n", msg->resource);
+	printf("Method: %s\n", msg->method);
+	printf("Referer: %d\n", msg->referer);
+	printf("Body: %s\n", msg->body);
+}
+
 void dispatchEvent(Message* msg) {
+	printMessage(msg);
 	if (strcmp(msg->resource, "login") == 0) {
 		if (strcmp(msg->method, "success") == 0) {
 			setLogin(msg->body);

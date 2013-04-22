@@ -16,10 +16,4 @@ typedef struct _task{
 	struct _task * next;
 }Task;
 
-typedef struct _client{
-	int pid;
-	int fd;
-	struct _client * next;
-}Client;
-
 #endif

@@ -1,6 +1,15 @@
 #include "socket.h"
 
-int createServerSocket() {
+Client* newClientNode();
+
+Client* clients;
+
+Client* newClientNode() {
+	Client* client = malloc(sizeof(Client));
+	return client;
+}
+
+int createConnection_IPC(int pid) {
 	int listenfd = 0;
 	struct sockaddr_in serv_addr;
 
@@ -27,10 +36,18 @@ int createServerSocket() {
 	/*Listen to 10 connections at most*/
 	listen(listenfd, 10);
 
+	/*Init client list*/
+	Client* client = newClientNode();
+	client->pid = pid;
+	client->fd = listenfd;
+	client->next = clients;
+	clients = client;
+	printf("Registering client %d\n", pid);
+
 	return listenfd;
 }
 
-int createClientSocket() {
+int openClient_IPC(int pid) {
 	int sockfd = 0;
 
 	struct sockaddr_in serv_addr;
@@ -54,23 +71,48 @@ int createClientSocket() {
 		printf("\n Error : Connect Failed \n");
 		return 1;
 	}
+
+	Client* client = newClientNode();
+	client->pid = pid;
+	printf("%d\n", sockfd);
+	client->fd = sockfd;
+	client->next = clients;
+	clients = client;
+	printf("Registering client %d\n", pid);
+
 	return sockfd;
 }
 
-void writeToSocket(int sockfd, char* msg) {
-	char buffer[1025];
-	snprintf(buffer, sizeof(buffer), "%s\n", msg);
-	write(sockfd, buffer, strlen(buffer));
+void sendData_IPC(int id, void* msg, size_t size) {
+	int status;
+	while ((status = write(getClientFile(id), msg, size)) <= 0)
+		;
+	if (status == -1) {
+		printf("Message Not Sent\n");
+	}
+	free(msg);
 }
 
-char* readFromSocket(int sockfd) {
-	int n = 0;
-	char *buffer = (char*) malloc(sizeof(char) * 1024);
-	while ((n = read(sockfd, buffer, sizeof(buffer) - 1)) > 0) {
-		buffer[n] = 0;
-		if (fputs(buffer, stdout) == EOF) {
-			printf("\n Error : Fputs error\n");
+int getClientFD(int pid) {
+	Client* aux = clients;
+	while (aux != NULL) {
+		if (aux->pid == pid) {
+			return aux->fd;
 		}
+		aux = aux->next;
 	}
-	return buffer;
+	return 0;
+}
+
+void* listenMessage_IPC(int pid, size_t messageSize) {
+	int status;
+	void* info = malloc(messageSize);
+	int fd = getClientFD(pid);
+	status = read(fd, info, messageSize);
+	if (status <= 0) {
+		free(info);
+		//perror("read");
+	} else if (status >= 1) {
+		return info;
+	}
 }

@@ -8,16 +8,22 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct _client{
+	int pid;
+	int fd;
+	struct _client * next;
+}Client;
+
 /*Creates Server side socket and starts listening to a port*/
-int createServerSocket();
+int createConnection_IPC(int pid);
 
 /*Creates Client side socket and connects to 127.0.0.1*/
-int createClientSocket();
+int openClient_IPC(int pid);
 
 /*Writes message into socket*/
-void writeToSocket(int sockfd, char* msg);
+void sendData_IPC(int pid, void* msg, size_t size);
 
 /*Read from socket*/
-char* readFromSocket(int sockfd);
+void* listenMessage_IPC(int pid, size_t messageSize);
 
 #endif

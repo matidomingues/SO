@@ -11,11 +11,17 @@ Client* newClientNode() {
 
 int createConnection_IPC(int pid) {
 	int listenfd = 0;
+	int port = 0;
 	struct sockaddr_in serv_addr;
 
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Error : Could not create socket \n");
 		return 1;
+	}
+	if(pid == 0){
+		port = 5000;
+	}else{
+		port = pid;
 	}
 
 	/*Set socket to NONBLOCK*/
@@ -28,7 +34,7 @@ int createConnection_IPC(int pid) {
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(5000);
+	serv_addr.sin_port = htons(port);
 
 	/*Bind socket to address*/
 	bind(listenfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr));
@@ -49,17 +55,23 @@ int createConnection_IPC(int pid) {
 
 int openClient_IPC(int pid) {
 	int sockfd = 0;
-
+	int port = 0;
 	struct sockaddr_in serv_addr;
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Error : Could not create socket \n");
 		return 1;
 	}
 
+	if(pid == 0){
+		port = 5000;
+	}else{
+		port = pid;
+	}
+
 	memset(&serv_addr, '0', sizeof(serv_addr));
 
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(5000);
+	serv_addr.sin_port = htons(port);
 
 	if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
 		printf("\n inet_pton error occurred\n");

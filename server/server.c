@@ -34,10 +34,13 @@ void ManageClient(int referer){
 	sendData(referer, fillMessageData("client", "success", ""), sizeof(Message));
 }
 
-static void
-clientConn(int pid){
+static void *
+clientConn(void* msg){
+	int pid = ((Message*)msg)->referer;
+	openClient(pid);
+	sendData(pid, fillMessageData("client", "success", ""), sizeof(Message));
 	while(1){
-		Message* data = (Message*)listenMessage(pid, sizeof(Message));
+		Message* data = (Message*)listenMessage(0, sizeof(Message));
 		pthread_mutex_lock(&mut);
 		if(data != NULL){
 			pushMessage(data);
@@ -289,6 +292,12 @@ static void createExecuteActions(){
 	pthread_detach(execute_thr);
 }
 
+static void cloneConnection(Message* msg){
+	pthread_t conn_thr;
+	pthread_create(&conn_thr, NULL, clientConn, msg);
+	pthread_detach(conn_thr);
+}
+
 int main() {
 	int fd;
 	Message* data;
@@ -307,8 +316,16 @@ int main() {
 	while(1){
 		data = (Message*)listenMessage(0, sizeof(Message));
 		if(data != NULL){
-			pushMessage(data);
-			pthread_cond_signal(&newMessage);
+			if(strcmp(data->resource, "client") == 0){
+				if(strcmp(data->method, "register") == 0){
+					cloneConnection(data);	
+				}else{
+					printf("Error on basic connection to server\n");
+				}
+			}else{
+				printf("Error on basic connection to server\n");
+			}
+
 		}
 	}
 	return 1;

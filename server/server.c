@@ -22,6 +22,7 @@ Message* fillMessageData(char* resource, char* method, char* body);
 void pushMessage(Message* msg);
 
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t newMessage;
 
 Task* head;
 Task* tail;
@@ -40,10 +41,12 @@ clientConn(int pid){
 		pthread_mutex_lock(&mut);
 		if(data != NULL){
 			pushMessage(data);
+			pthread_cond_signal(&newMessage);
 		}
 		pthread_mutex_unlock(&mut);
 	}
 }
+
 
 Task* newTaskNode(){
 	Task* task = malloc(sizeof(Task));
@@ -226,35 +229,6 @@ void sendUserFee(Message* msg){
 	sendData(msg->referer, fillMessageData("user", "fee", (char*)num), sizeof(Message));
 }
 
-void executeActions(){
-	Message* msg;
-	while((msg = popMessage()) != NULL){
-		if(strcmp(msg->resource, "client") == 0){
-			if(strcmp(msg->method, "register") == 0){
-				ManageClient(msg->referer);
-			}
-		}else if(strcmp(msg->resource, "login") == 0){
-			if(strcmp(msg->method, "register") == 0){
-				registerUser(msg);
-			}else if(strcmp(msg->method, "login") == 0){
-				loginUser(msg);
-			}
-		}else if(strcmp(msg->resource, "mail") == 0){
-			if(strcmp(msg->method, "send") == 0){
-				recieveEmail(msg);
-			}else if(strcmp(msg->method, "receive") == 0){
-				sendEmails(msg);
-			}
-		}else if(strcmp(msg->resource, "user") == 0){
-			if(strcmp(msg->method, "fee") == 0){
-				sendUserFee(msg);
-			}
-		}
-	}
-}
-
-
-
 void dumpAll(int sig) {
 	signal(sig,SIG_IGN);
 	printf("Dumping data \n");
@@ -268,6 +242,53 @@ void dumpAll(int sig) {
 	exit(0);
 }
 
+static void *
+executeActions(void *arg){
+	Message* msg;
+	while(1){
+		pthread_mutex_lock(&mut);
+		msg = popMessage();
+	
+		if(msg != NULL){
+			if(strcmp(msg->resource, "client") == 0){
+				if(strcmp(msg->method, "register") == 0){
+					ManageClient(msg->referer);
+				}
+			}else if(strcmp(msg->resource, "login") == 0){
+				if(strcmp(msg->method, "register") == 0){
+					registerUser(msg);
+				}else if(strcmp(msg->method, "login") == 0){
+					loginUser(msg);
+				}
+			}else if(strcmp(msg->resource, "mail") == 0){
+				if(strcmp(msg->method, "send") == 0){
+					recieveEmail(msg);
+				}else if(strcmp(msg->method, "receive") == 0){
+					sendEmails(msg);
+				}
+			}else if(strcmp(msg->resource, "user") == 0){
+				if(strcmp(msg->method, "fee") == 0){
+					sendUserFee(msg);
+				}
+			}
+		}
+		else{
+			/* Sleep until new Messages */
+			printf("sleeping\n");
+			pthread_cond_wait(&newMessage, &mut);
+			printf("woke up\n");
+		}
+		pthread_mutex_unlock(&mut);
+	}
+}
+
+
+static void createExecuteActions(){
+	pthread_t execute_thr;
+	pthread_create(&execute_thr, NULL, executeActions, NULL);
+	pthread_detach(execute_thr);
+}
+
 int main() {
 	int fd;
 	Message* data;
@@ -277,12 +298,18 @@ int main() {
 	createConnection(0);
 	printf("Listening on: /tmp/serv.xxxxx\n");
 	signal(SIGINT, dumpAll);
+
+	pthread_mutex_init( &mut, NULL );
+    pthread_cond_init( &newMessage, NULL );
+
+	createExecuteActions();
+
 	while(1){
 		data = (Message*)listenMessage(0, sizeof(Message));
 		if(data != NULL){
 			pushMessage(data);
+			pthread_cond_signal(&newMessage);
 		}
-		executeActions();
 	}
 	return 1;
 }

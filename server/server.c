@@ -18,6 +18,9 @@
 #include <signal.h>
 #include <pthread.h>
 
+Message* fillMessageData(char* resource, char* method, char* body);
+void pushMessage(Message* msg);
+
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 Task* head;
@@ -25,8 +28,21 @@ Task* tail;
 linked_list* users;
 int reader;
 
+void ManageClient(int referer){
+	openClient(referer);
+	sendData(referer, fillMessageData("client", "success", ""), sizeof(Message));
+}
+
 static void
-transporter(int pid){
+clientConn(int pid){
+	while(1){
+		Message* data = (Message*)listenMessage(pid, sizeof(Message));
+		pthread_mutex_lock(&mut);
+		if(data != NULL){
+			pushMessage(data);
+		}
+		pthread_mutex_unlock(&mut);
+	}
 }
 
 Task* newTaskNode(){
@@ -215,8 +231,7 @@ void executeActions(){
 	while((msg = popMessage()) != NULL){
 		if(strcmp(msg->resource, "client") == 0){
 			if(strcmp(msg->method, "register") == 0){
-				openClient(msg->referer);
-				sendData(msg->referer, fillMessageData("success", "client", ""), sizeof(Message));
+				ManageClient(msg->referer);
 			}
 		}else if(strcmp(msg->resource, "login") == 0){
 			if(strcmp(msg->method, "register") == 0){

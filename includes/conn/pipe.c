@@ -40,7 +40,7 @@ void createConnection_IPC(int id){
 	char* path;
 	path = getFullPath(id);
 	createPipe(path);
-	openRead(id);
+	openClient_IPC(id);
 }
 
 char* getFullPath(int id){
@@ -56,22 +56,10 @@ char* getFullPath(int id){
 	return route;
 }
 
-void openRead(int pid){
-	char* route = getFullPath(pid);
-	printf("%s\n", route);
-	int fd = open(route, O_RDONLY | O_NONBLOCK);
-	Client* client = newClientNode();
-	client->pid = pid;
-	client->fd = fd;
-	client->next = clients;
-	clients = client;
-	printf("Registering client %d\n", pid);
-}
-
 void openClient_IPC(int pid){
 	char* route = getFullPath(pid);
 	printf("%s\n", route);
-	int fd = open(route, O_WRONLY | O_NONBLOCK);
+	int fd = open(route, O_RDWR | O_NONBLOCK);
 	Client* client = newClientNode();
 	client->pid = pid;
 	printf("%d\n", fd);

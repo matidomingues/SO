@@ -8,11 +8,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct _client{
+typedef struct _client {
 	int pid;
 	int fd;
 	struct _client * next;
-}Client;
+} Client;
 
 /*Creates Server side socket and starts listening to a port*/
 int createConnection_IPC(int pid);

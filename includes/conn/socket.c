@@ -95,9 +95,9 @@ int openClient_IPC(int pid) {
 	return sockfd;
 }
 
-void sendData_IPC(int id, void* msg, size_t size) {
+void sendData_IPC(int pid, void* msg, size_t size) {
 	int status;
-	while ((status = write(getClientFD(id), msg, size)) <= 0)
+	while ((status = write(getClientFD(pid), msg, size)) <= 0)
 		;
 	if (status == -1) {
 		printf("Message Not Sent\n");

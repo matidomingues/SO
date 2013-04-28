@@ -104,7 +104,6 @@ void sendData_IPC(int id, void* msg, size_t size) {
 	}else{
 		printf("Message Sent data: %d\n", status);
 	}
-	free(msg);
 }
 
 int getClientFD(int pid) {

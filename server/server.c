@@ -51,7 +51,6 @@ clientConn(void* msg){
 			printf("Sleeping until new Data\n");
 			pthread_cond_wait(&newData, &mut);
 			printf("New Data, Woke Up\n");
-			sendData(pid, fillMessageData("login", "success", "mati"), sizeof(Message));
 			pthread_mutex_unlock(&mut);
 		}
 	}
@@ -164,7 +163,7 @@ void loginUser(Message* msg){
 		}
 		if(strcmp(elem->password, tokens) == 0){
 			printf("User %s logued correctly\n", elem->username);
-			//sendData(msg->referer, fillMessageData("login", "success", elem->username), sizeof(Message));
+			sendData(msg->referer, fillMessageData("login", "success", elem->username), sizeof(Message));
 		}else{
 			printf("Incorrect password, User: %s\n", elem->username);
 			sendData(msg->referer, fillMessageData("login", "error", "Incorrect Password"), sizeof(Message));
@@ -201,7 +200,7 @@ void recieveEmail(Message* msg){
 	int status = 0;
 	user* data;
 	sendData(msg->referer, fillMessageData("mail", "continue", ""), sizeof(Message));
-	mail* info = (mail*)listenMessage(0, sizeof(mail));
+	mail* info = (mail*)listenMessage(msg->referer, sizeof(mail));
 	if(info == NULL){
 		sendData(msg->referer, fillMessageData("mail", "error", "Mail Not Sent\n"), sizeof(Message));
 		//perror("read");

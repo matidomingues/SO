@@ -135,7 +135,7 @@ void writeEmail() {
 	elem->read = 0;
 	elem->senttime = sendtime;
 	sendData(0, fillMessageData("mail","send", "1"), sizeof(Message));
-	getResponce(getpid());
+	getResponce(0);
 	sendData(0, elem, sizeof(mail));
 	//free(elem);
 	getResponce(0);

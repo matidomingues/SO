@@ -18,7 +18,7 @@ void sendData(int id, void* msg, size_t size){
 }
 
 int acceptConnection(){
-	acceptConnection_IPC();
+	return acceptConnection_IPC();
 }
 
 void closeConnection(int pid){

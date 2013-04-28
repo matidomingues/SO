@@ -91,7 +91,7 @@ int openClient_IPC(int pid) {
 	client->next = clients;
 	clients = client;
 	printf("Registering client %d\n", pid);
-
+	printf("Socket FD %d\n", sockfd);
 	return sockfd;
 }
 
@@ -101,6 +101,8 @@ void sendData_IPC(int id, void* msg, size_t size) {
 		;
 	if (status == -1) {
 		printf("Message Not Sent\n");
+	}else{
+		printf("Message Sent data: %d\n", status);
 	}
 	free(msg);
 }
@@ -136,12 +138,28 @@ void* listenMessage_IPC(int pid, size_t messageSize) {
 		if (connfd == -1) {
 			printf("Awaiting connection...\n");
 		} else {
+			printf("connfd: %d\n", connfd);
 			return connfd;
 		}
  }
 
 void closeConnection_IPC(int pid){
  	close(getClientFD(pid));
+ 	Client* info = clients;
+ 	Client* before = NULL;
+ 	while(info != NULL){
+ 		if(info->pid = pid){
+ 			if(before == NULL){
+ 				clients = clients->next;
+ 				free(info);
+ 			}else{
+ 				before = info->next;
+ 				free(info);
+ 			}
+ 		}
+ 		before = info;
+ 		info = info->next;
+ 	}
 }
 
 void registerClient_IPC(int pid, int fd){

@@ -22,12 +22,13 @@ Message* fillMessageData(char* resource, char* method, char* body);
 void pushMessage(Message* msg);
 
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t newMessage;
+static pthread_cond_t newMessage, newData;
 
 Task* head;
 Task* tail;
 linked_list* users;
 int reader;
+
 
 void ManageClient(int referer){
 	openClient(referer);
@@ -37,17 +38,23 @@ void ManageClient(int referer){
 static void *
 clientConn(void* msg){
 	int pid = ((Message*)msg)->referer;
-	//openClient(pid);
+	int fd;
 	sendData(pid, fillMessageData("client", "success", ""), sizeof(Message));
-	// while(1){
-	// 	Message* data = (Message*)listenMessage(0, sizeof(Message));
-	// 	pthread_mutex_lock(&mut);
-	// 	if(data != NULL){
-	// 		pushMessage(data);
-	// 		pthread_cond_signal(&newMessage);
-	// 	}
-	// 	pthread_mutex_unlock(&mut);
-	// }
+	while(1){
+		Message* data = (Message*)listenMessage(pid, sizeof(Message));
+		if(data != NULL){
+			pthread_mutex_lock(&mut);
+			pushMessage(data);
+			printf("paso\n");
+			pthread_cond_signal(&newMessage);
+			printf("sleeping\n");
+			pthread_cond_wait(&newData, &mut);
+			printf("wokeup\n");
+			pthread_mutex_unlock(&mut);
+		}else{
+			printf("loop\n");
+		}
+	}
 }
 
 
@@ -166,6 +173,7 @@ void loginUser(Message* msg){
 		printf("Incorrect Username");
 		sendData(msg->referer, fillMessageData("login", "error", "Incorrect Username"), sizeof(Message));
 	}
+	printf("salio\n");
 }
 
 void sendAllMails(int client, user* elem){
@@ -252,13 +260,9 @@ executeActions(void *arg){
 	while(1){
 		pthread_mutex_lock(&mut);
 		msg = popMessage();
-	
+		printf("loop\n");
 		if(msg != NULL){
-			if(strcmp(msg->resource, "client") == 0){
-				if(strcmp(msg->method, "register") == 0){
-					ManageClient(msg->referer);
-				}
-			}else if(strcmp(msg->resource, "login") == 0){
+			if(strcmp(msg->resource, "login") == 0){
 				if(strcmp(msg->method, "register") == 0){
 					registerUser(msg);
 				}else if(strcmp(msg->method, "login") == 0){
@@ -275,6 +279,7 @@ executeActions(void *arg){
 					sendUserFee(msg);
 				}
 			}
+			pthread_cond_signal(&newData);
 		}
 		else{
 			/* Sleep until new Messages */
@@ -317,18 +322,16 @@ int main() {
 
 	pthread_mutex_init( &mut, NULL );
     pthread_cond_init( &newMessage, NULL );
+    pthread_cond_init( &newData, NULL );
 
 	createExecuteActions();
 
 	while(1){
 		fd = acceptConnection(0);
-		printf("acepto\n");
 		data = (Message*)listenMessage(fd, sizeof(Message));
 		if(data != NULL){
-			printMessage(data);
 			if(strcmp(data->resource, "client") == 0){
 				if(strcmp(data->method, "register") == 0){
-					printf("referer: %d\n", data->referer);
 					registerClient(data->referer, fd);
 					cloneConnection(data);	
 				}else{
@@ -342,5 +345,6 @@ int main() {
 			printf("data is null\n");
 		}
 	}
+	closeConnection(0);
 	return 1;
 }

@@ -37,8 +37,8 @@ Message* fillMessageData(char* resource, char* method, char* body){
 
 }
 
-void getResponce(){
-	Message* msg = listenMessage(getpid(), sizeof(Message));
+void getResponce(int pid){
+	Message* msg = listenMessage(pid, sizeof(Message));
 	if(msg != NULL){
 		dispatchEvent(msg);
 	}
@@ -67,6 +67,10 @@ void printMessage(Message* msg){
 	printf("Body: %s\n", msg->body);
 }
 
+void clientRegistered(){
+	printf("User registered Successfully, switching socket\n");
+}
+
 void dispatchEvent(Message* msg) {
 	printMessage(msg);
 	if (strcmp(msg->resource, "login") == 0) {
@@ -83,7 +87,7 @@ void dispatchEvent(Message* msg) {
 		}
 	} else if (strcmp(msg->resource, "client") == 0) {
 		if (strcmp(msg->method, "success") == 0) {
-			printf("Client Registered Successfully\n");
+			clientRegistered();
 		}
 	}else if(strcmp(msg->resource, "mail") == 0){
 		if(strcmp(msg->method, "receive") == 0){
@@ -131,20 +135,20 @@ void writeEmail() {
 	elem->read = 0;
 	elem->senttime = sendtime;
 	sendData(0, fillMessageData("mail","send", "1"), sizeof(Message));
-	getResponce();
+	getResponce(getpid());
 	sendData(0, elem, sizeof(mail));
 	//free(elem);
-	getResponce();
+	getResponce(getpid());
 }
 
 void grabNewEmails() {
 	sendData(0, fillMessageData("mail", "receive", username), sizeof(Message));
-	getResponce();
+	getResponce(getpid());
 }
 
 void getFee(){
 	sendData(0, fillMessageData("user", "fee", username), sizeof(Message));
-	getResponce();
+	getResponce(getpid());
 }
 
 void readConsole() {
@@ -160,14 +164,14 @@ void readConsole() {
 					"Ingrese Usuario y Contraseña\nSeparados por ',' de la forma Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData(0, fillMessageData("login", "login", result), sizeof(Message));
-			getResponce();
+			getResponce(getpid());
 
 		} else if (a == 2) {
 			printf(
 					"Ingrese Nombre, Usuario y Contraseña\nSeparados por ',' de la forma\nNombre,Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData(0, fillMessageData("login", "register", result), sizeof(Message));
-			getResponce();
+			getResponce(getpid());
 
 		}
 	} else if (status == 1) {
@@ -188,11 +192,10 @@ void readConsole() {
 
 int main() {
 	openClient(0);
-	printf("sent\n");
 	sendData(0, fillMessageData("client", "register", ""), sizeof(Message));
-	// getResponce();
-	// while (1) {
-	// 	readConsole();
-	// }
+	getResponce(0);
+	while (1) {
+		readConsole();
+	}
 	return 1;
 }

@@ -27,7 +27,7 @@ int createConnection_IPC(int pid) {
 	/*Set socket to NONBLOCK*/
 	int flags;
 	flags = fcntl(listenfd, F_GETFL, 0);
-	fcntl(listenfd, F_SETFL, flags | O_NONBLOCK);
+	fcntl(listenfd, F_SETFL, flags);
 
 	/*Initialize Structs*/
 	memset(&serv_addr, '0', sizeof(serv_addr));
@@ -97,7 +97,7 @@ int openClient_IPC(int pid) {
 
 void sendData_IPC(int id, void* msg, size_t size) {
 	int status;
-	while ((status = write(getClientFile(id), msg, size)) <= 0)
+	while ((status = write(getClientFD(id), msg, size)) <= 0)
 		;
 	if (status == -1) {
 		printf("Message Not Sent\n");
@@ -113,7 +113,7 @@ int getClientFD(int pid) {
 		}
 		aux = aux->next;
 	}
-	return 0;
+	return pid;
 }
 
 void* listenMessage_IPC(int pid, size_t messageSize) {
@@ -127,4 +127,30 @@ void* listenMessage_IPC(int pid, size_t messageSize) {
 	} else if (status >= 1) {
 		return info;
 	}
+}
+
+ int acceptConnection_IPC(int pid){
+ 	int listenfd = getClientFD(pid);
+ 	int connfd = accept(listenfd, (struct sockaddr*) NULL, NULL); //Blocks (if block) until connection present
+
+		if (connfd == -1) {
+			printf("Awaiting connection...\n");
+		} else {
+			return connfd;
+		}
+ }
+
+void closeConnection_IPC(int pid){
+ 	close(getClientFD(pid));
+}
+
+void registerClient_IPC(int pid, int fd){
+	Client* client = newClientNode();
+	client->pid = pid;
+	printf("%d\n", fd);
+	client->fd = fd;
+	client->next = clients;
+	clients = client;
+	printf("Registering client %d\n", pid);
+
 }

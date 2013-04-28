@@ -188,11 +188,11 @@ void readConsole() {
 
 int main() {
 	openClient(0);
-	createConnection(getpid());
+	printf("sent\n");
 	sendData(0, fillMessageData("client", "register", ""), sizeof(Message));
-	getResponce();
-	while (1) {
-		readConsole();
-	}
+	// getResponce();
+	// while (1) {
+	// 	readConsole();
+	// }
 	return 1;
 }

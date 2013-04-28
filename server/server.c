@@ -37,17 +37,17 @@ void ManageClient(int referer){
 static void *
 clientConn(void* msg){
 	int pid = ((Message*)msg)->referer;
-	openClient(pid);
+	//openClient(pid);
 	sendData(pid, fillMessageData("client", "success", ""), sizeof(Message));
-	while(1){
-		Message* data = (Message*)listenMessage(0, sizeof(Message));
-		pthread_mutex_lock(&mut);
-		if(data != NULL){
-			pushMessage(data);
-			pthread_cond_signal(&newMessage);
-		}
-		pthread_mutex_unlock(&mut);
-	}
+	// while(1){
+	// 	Message* data = (Message*)listenMessage(0, sizeof(Message));
+	// 	pthread_mutex_lock(&mut);
+	// 	if(data != NULL){
+	// 		pushMessage(data);
+	// 		pthread_cond_signal(&newMessage);
+	// 	}
+	// 	pthread_mutex_unlock(&mut);
+	// }
 }
 
 
@@ -234,6 +234,7 @@ void sendUserFee(Message* msg){
 
 void dumpAll(int sig) {
 	signal(sig,SIG_IGN);
+	closeConnection(0);
 	printf("Dumping data \n");
 	dumpUsersToCSVFile(users);
 	int i;
@@ -298,6 +299,13 @@ static void cloneConnection(Message* msg){
 	pthread_detach(conn_thr);
 }
 
+void printMessage(Message* msg){
+	printf("Resource: %s\n", msg->resource);
+	printf("Method: %s\n", msg->method);
+	printf("Referer: %d\n", msg->referer);
+	printf("Body: %s\n", msg->body);
+}
+
 int main() {
 	int fd;
 	Message* data;
@@ -305,7 +313,6 @@ int main() {
 	users = createList(NULL);
 	initUserList("csv/users.csv", users);
 	createConnection(0);
-	printf("Listening on: /tmp/serv.xxxxx\n");
 	signal(SIGINT, dumpAll);
 
 	pthread_mutex_init( &mut, NULL );
@@ -314,18 +321,25 @@ int main() {
 	createExecuteActions();
 
 	while(1){
-		data = (Message*)listenMessage(0, sizeof(Message));
+		fd = acceptConnection(0);
+		printf("acepto\n");
+		data = (Message*)listenMessage(fd, sizeof(Message));
 		if(data != NULL){
+			printMessage(data);
 			if(strcmp(data->resource, "client") == 0){
 				if(strcmp(data->method, "register") == 0){
+					printf("referer: %d\n", data->referer);
+					registerClient(data->referer, fd);
 					cloneConnection(data);	
 				}else{
-					printf("Error on basic connection to server\n");
+					printf("Error on basic connection to server 2\n");
 				}
 			}else{
-				printf("Error on basic connection to server\n");
+				printf("Error on basic connection to server 1\n");
 			}
 
+		}else{
+			printf("data is null\n");
 		}
 	}
 	return 1;

@@ -26,4 +26,10 @@ void sendData_IPC(int pid, void* msg, size_t size);
 /*Read from socket*/
 void* listenMessage_IPC(int pid, size_t messageSize);
 
+int acceptConnection_IPC();
+
+void closeConnection_IPC(int pid);
+
+void registerClient_IPC(int pid, int fd);
+
 #endif

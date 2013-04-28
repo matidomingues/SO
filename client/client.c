@@ -48,7 +48,7 @@ void recieveEmails(int num){
 	int i, error;
 	mail* msg;
 	for(i=0; i<num; i++){
-		msg = listenMessage(getpid(), sizeof(mail));
+		msg = listenMessage(0, sizeof(mail));
 		if(msg != NULL){
 			printf("%d: From: %s, Subject: %s Time: %s", i+1, msg->from, msg->header, ctime(&(msg->senttime)));
 			printf("Message:%s\n", msg->body);
@@ -138,17 +138,17 @@ void writeEmail() {
 	getResponce(getpid());
 	sendData(0, elem, sizeof(mail));
 	//free(elem);
-	getResponce(getpid());
+	getResponce(0);
 }
 
 void grabNewEmails() {
 	sendData(0, fillMessageData("mail", "receive", username), sizeof(Message));
-	getResponce(getpid());
+	getResponce(0);
 }
 
 void getFee(){
 	sendData(0, fillMessageData("user", "fee", username), sizeof(Message));
-	getResponce(getpid());
+	getResponce(0);
 }
 
 void readConsole() {
@@ -164,14 +164,14 @@ void readConsole() {
 					"Ingrese Usuario y Contraseña\nSeparados por ',' de la forma Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData(0, fillMessageData("login", "login", result), sizeof(Message));
-			getResponce(getpid());
+			getResponce(0);
 
 		} else if (a == 2) {
 			printf(
 					"Ingrese Nombre, Usuario y Contraseña\nSeparados por ',' de la forma\nNombre,Usuario,Contraseña\n");
 			scanf("%30s", result);
 			sendData(0, fillMessageData("login", "register", result), sizeof(Message));
-			getResponce(getpid());
+			getResponce(0);
 
 		}
 	} else if (status == 1) {

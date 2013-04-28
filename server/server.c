@@ -41,18 +41,18 @@ clientConn(void* msg){
 	int fd;
 	sendData(pid, fillMessageData("client", "success", ""), sizeof(Message));
 	while(1){
+		printf("Waiting for new Message\n");
 		Message* data = (Message*)listenMessage(pid, sizeof(Message));
 		if(data != NULL){
 			pthread_mutex_lock(&mut);
 			pushMessage(data);
-			printf("paso\n");
+			printf("Message Pushed, Waking up Execute\n");
 			pthread_cond_signal(&newMessage);
-			printf("sleeping\n");
+			printf("Sleeping until new Data\n");
 			pthread_cond_wait(&newData, &mut);
-			printf("wokeup\n");
+			printf("New Data, Woke Up\n");
+			sendData(pid, fillMessageData("login", "success", "mati"), sizeof(Message));
 			pthread_mutex_unlock(&mut);
-		}else{
-			printf("loop\n");
 		}
 	}
 }
@@ -164,13 +164,13 @@ void loginUser(Message* msg){
 		}
 		if(strcmp(elem->password, tokens) == 0){
 			printf("User %s logued correctly\n", elem->username);
-			sendData(msg->referer, fillMessageData("login", "success", elem->username), sizeof(Message));
+			//sendData(msg->referer, fillMessageData("login", "success", elem->username), sizeof(Message));
 		}else{
 			printf("Incorrect password, User: %s\n", elem->username);
 			sendData(msg->referer, fillMessageData("login", "error", "Incorrect Password"), sizeof(Message));
 		}
 	}else{
-		printf("Incorrect Username");
+		printf("Incorrect Username\n");
 		sendData(msg->referer, fillMessageData("login", "error", "Incorrect Username"), sizeof(Message));
 	}
 	printf("salio\n");
@@ -260,7 +260,6 @@ executeActions(void *arg){
 	while(1){
 		pthread_mutex_lock(&mut);
 		msg = popMessage();
-		printf("loop\n");
 		if(msg != NULL){
 			if(strcmp(msg->resource, "login") == 0){
 				if(strcmp(msg->method, "register") == 0){
@@ -283,9 +282,9 @@ executeActions(void *arg){
 		}
 		else{
 			/* Sleep until new Messages */
-			printf("sleeping\n");
+			printf("Stack Empty, Sleeping\n");
 			pthread_cond_wait(&newMessage, &mut);
-			printf("woke up\n");
+			printf("Woke up to consume Stack\n");
 		}
 		pthread_mutex_unlock(&mut);
 	}
@@ -341,8 +340,6 @@ int main() {
 				printf("Error on basic connection to server 1\n");
 			}
 
-		}else{
-			printf("data is null\n");
 		}
 	}
 	closeConnection(0);

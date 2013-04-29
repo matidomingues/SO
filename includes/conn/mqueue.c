@@ -1,10 +1,13 @@
 #include "mqueue.h"
 
-typedef struct _client {
-	int pid;
-	int fd;
-	struct _client * next;
-} Client;
+Client* newClientNode();
+
+Client* clients;
+
+Client* newClientNode() {
+	Client* client = malloc(sizeof(Client));
+	return client;
+}
 
 /*Message Queue identifier*/
 #define KEY 500

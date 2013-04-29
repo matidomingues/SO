@@ -1,7 +1,9 @@
 #ifndef _MQUEUE_H_
 #define _MQUEUE_H_
 
-#include<sys/msg.h>
+#include <sys/msg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct _client {
 	int pid;

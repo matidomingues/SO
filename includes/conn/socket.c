@@ -97,8 +97,10 @@ int openClient_IPC(int pid) {
 
 void sendData_IPC(int pid, void* msg, size_t size) {
 	int status;
-	while ((status = write(getClientFD(pid), msg, size)) <= 0)
-		;
+	printf("entro\n");
+	while ((status = write(getClientFD(pid), msg, size)) <= 0){
+		perror("write");
+	}
 	if (status == -1) {
 		printf("Message Not Sent\n");
 	}else{

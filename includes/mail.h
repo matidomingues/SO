@@ -11,4 +11,9 @@ typedef struct mail {
 	time_t senttime;
 } mail;
 
+typedef struct _listmail{
+	mail* msg;
+	struct _listmail* next;
+}ListMail;
+
 #endif

@@ -1,6 +1,5 @@
 #ifndef _CSV_H_
 #define _CSV_H_
-#endif
 
 #include "user.h"
 #include "mail.h"
@@ -60,3 +59,6 @@ void dumpUsersToCSVFile(linked_list* users);
 /****************************************************/
 
 void dumpMailsToCSVFile(linked_list* mails, user* u);
+
+#endif
+

@@ -151,6 +151,10 @@ void getFee(){
 	getResponce(0);
 }
 
+void logOut(){
+	status = 0;
+}
+
 void readConsole() {
 	int a;
 	char result[30];
@@ -158,6 +162,7 @@ void readConsole() {
 		printf("Ingrese Numero de Opcion:\n");
 		printf("1: Login\n");
 		printf("2: Registrarse\n");
+		printf("3: Cerrar\n");
 		scanf("%d", &a);
 		if (a == 1) {
 			printf(
@@ -173,12 +178,17 @@ void readConsole() {
 			sendData(0, fillMessageData("login", "register", result), sizeof(Message));
 			getResponce(0);
 
+		} else if( a == 3){
+			sendData(0, fillMessageData("client", "close", ""), sizeof(Message));
+			closeConnection(0);
+			exit(0);
 		}
 	} else if (status == 1) {
 		printf("Ingrese Numero de Opcion:\n");
 		printf("1: Enviar Email\n");
 		printf("2: Recibir Emails\n");
 		printf("3: Consultar Tarifacion\n");
+		printf("4: Log Out\n");
 		scanf("%d", &a);
 		if (a == 1) {
 			writeEmail();
@@ -186,6 +196,8 @@ void readConsole() {
 			grabNewEmails();
 		} else if( a == 3){
 			getFee();
+		} else if( a == 4){
+			logOut();
 		}
 	}
 }

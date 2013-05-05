@@ -63,8 +63,8 @@ void addMailList(int pid, linked_list* mailList){
 }
 
 linked_list* getMailList(int pid){
-		Clients* aux = clientsinfo;
-	while(clientsinfo != NULL && clientsinfo->pid != pid){
+	Clients* aux = clientsinfo;
+	while(aux != NULL && aux->pid != pid){
 		aux = aux->next;
 	}
 	if(aux == NULL){

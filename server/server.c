@@ -101,8 +101,11 @@ void pushWait(int id, Message* data){
 
 void clientSendEmails(Message* msg, int id){
 	pushWait(id, msg);
+	pthread_mutex_lock(&mut);
 	Message* data = grabMessage(msg->referer);
+	printf("pid: %d\n", msg->referer);
 	sendData(msg->referer, data, sizeof(Message));
+	pthread_mutex_unlock(&mut);
 	sendAllMails(msg->referer, getMailList(msg->referer));
 }
 
@@ -125,15 +128,22 @@ clientConn(void* info){
 				}else if(strcmp(data->method, "receive") == 0){
 					clientSendEmails(data, id);
 				}
+			}else if(strcmp(data->resource, "client") == 0){
+				if(strcmp(data->method, "close") == 0){
+					printf("%d\n", pid);
+					closeConnection(pid);
+					break;
+				}
 			}else{
 				pushWait(id,data);
 				while((msg = grabMessage(pid)) != NULL){
-					printf("entro aca\n");
 					sendData(pid, msg, sizeof(Message));
 				}
 			}
 		}
 	}
+	printf("Salio \n");
+	return NULL;
 }
 
 ListMail* newMailNode(){
@@ -375,6 +385,10 @@ executeActions(void *arg){
 			}else if(strcmp(msg->resource, "user") == 0){
 				if(strcmp(msg->method, "fee") == 0){
 					sendUserFee(msg);
+				}
+			}else if(strcmp(msg->resource, "mail") == 0){
+				if(strcmp(msg->method, "receive") == 0){
+					sendEmails(msg);
 				}
 			}
 			client = getClientCond(msg->referer);

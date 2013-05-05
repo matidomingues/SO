@@ -97,8 +97,9 @@ int openClient_IPC(int pid) {
 
 void sendData_IPC(int pid, void* msg, size_t size) {
 	int status;
-	printf("entro\n");
+	printf("pid: %d clientFD: %d\n", pid, getClientFD(pid));
 	while ((status = write(getClientFD(pid), msg, size)) <= 0){
+		sleep(0.1);
 		perror("write");
 	}
 	if (status == -1) {
@@ -109,9 +110,10 @@ void sendData_IPC(int pid, void* msg, size_t size) {
 }
 
 int getClientFD(int pid) {
+	printf("%d\n", pid);
 	Client* aux = clients;
 	while (aux != NULL) {
-		if (aux->pid == pid) {
+		if (aux != NULL && aux->pid == pid) {
 			return aux->fd;
 		}
 		aux = aux->next;
@@ -146,21 +148,21 @@ void* listenMessage_IPC(int pid, size_t messageSize) {
 
 void closeConnection_IPC(int pid){
  	close(getClientFD(pid));
- 	Client* info = clients;
- 	Client* before = NULL;
- 	while(info != NULL){
- 		if(info->pid = pid){
- 			if(before == NULL){
- 				clients = clients->next;
- 				free(info);
- 			}else{
- 				before = info->next;
- 				free(info);
- 			}
- 		}
- 		before = info;
- 		info = info->next;
- 	}
+ 	// Client* info = clients;
+ 	// Client* before = NULL;
+ 	// while(info != NULL){
+ 	// 	if(info->pid = pid){
+ 	// 		if(before == NULL){
+ 	// 			clients = clients->next;
+ 	// 			free(info);
+ 	// 		}else{
+ 	// 			before->next = info->next;
+ 	// 			free(info);
+ 	// 		}
+ 	// 	}
+ 	// 	before = info;
+ 	// 	info = info->next;
+ 	// }
 }
 
 void registerClient_IPC(int pid, int fd){

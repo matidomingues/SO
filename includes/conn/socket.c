@@ -86,7 +86,6 @@ int openClient_IPC(int pid) {
 
 	Client* client = newClientNode();
 	client->pid = pid;
-	printf("%d\n", sockfd);
 	client->fd = sockfd;
 	client->next = clients;
 	clients = client;
@@ -97,7 +96,6 @@ int openClient_IPC(int pid) {
 
 void sendData_IPC(int pid, void* msg, size_t size) {
 	int status;
-	printf("pid: %d clientFD: %d\n", pid, getClientFD(pid));
 	while ((status = write(getClientFD(pid), msg, size)) <= 0){
 		sleep(0.1);
 		perror("write");
@@ -110,7 +108,6 @@ void sendData_IPC(int pid, void* msg, size_t size) {
 }
 
 int getClientFD(int pid) {
-	printf("%d\n", pid);
 	Client* aux = clients;
 	while (aux != NULL) {
 		if (aux != NULL && aux->pid == pid) {
@@ -168,7 +165,6 @@ void closeConnection_IPC(int pid){
 void registerClient_IPC(int pid, int fd){
 	Client* client = newClientNode();
 	client->pid = pid;
-	printf("%d\n", fd);
 	client->fd = fd;
 	client->next = clients;
 	clients = client;

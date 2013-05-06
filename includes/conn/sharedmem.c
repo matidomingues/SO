@@ -28,7 +28,7 @@ void leave(void) {
 int createConnection_IPC(int pid) {
 	initmutex();
 	int shmid;
-	key_t key = 5678;
+	key_t key = 5000+pid;
 	void *shm;
 
 	/*Create the shared memory segment*/
@@ -41,7 +41,7 @@ int createConnection_IPC(int pid) {
 		perror("shmat");
 	}
 
-	return openClient_IPC(pid);
+	return shmid;
 }
 
 int openClient_IPC(int pid) {
@@ -75,6 +75,9 @@ void sendData_IPC(int pid, void* msg, size_t size) {
 	int status;
 	void * shm = getClientSHM(pid);
 	enter();
+	while(shm != NULL){
+		sleep(1);
+	}
 	memcpy(shm, msg, size);
 	leave();
 }
@@ -89,6 +92,8 @@ void* listenMessage_IPC(int pid, size_t messageSize) {
 	leave();
 
 	if (data == NULL) { //TODO:Retry?, ojo con esto loop recursivo raro
+		sleep(1);
+		memset(shm, NULL, messageSize);
 		listenMessage_IPC(pid, messageSize);
 	} else {
 		return data;
@@ -107,14 +112,19 @@ void* getClientSHM(int pid) {
 }
 
 void* getClientSHMID(int pid) {
-	Client* aux = clients;
-	while (aux != NULL) {
-		if (aux->pid == pid) {
-			return aux->shmid;
-		}
-		aux = aux->next;
+	Client* aux = getClient(pid);
+	if(aux != NULL){
+		return aux->shmid;
 	}
 	return NULL;
+}
+
+Client* getClient(int pid){
+	Client* aux = clients;
+	while(aux != NULL && aux->pid != pid){
+		aux = aux->sig;
+	}
+	return aux;
 }
 
 int acceptConnection_IPC() {

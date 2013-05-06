@@ -1,81 +1,126 @@
 #include "sharedmem.h"
 
-static sem_t *sd;
-char* mem;
+/*Size in bytes of SM space*/
+#define SHMSZ 1024
 
-void
-initmutex(void)
-{
-	if ( !(sd = sem_open("/mutex", O_RDWR|O_CREAT, 0666, 1)) )
+Client* clients;
+
+Client* newClientNode() {
+	Client* client = malloc(sizeof(Client));
+	return client;
+}
+
+static sem_t *sd;
+
+void initmutex(void) {
+	if (!(sd = sem_open("/mutex", O_RDWR | O_CREAT, 0666, 1)))
 		fatal("sem_open");
 }
 
-void
-enter(void)
-{
+void enter(void) {
 	sem_wait(sd);
 }
 
-void
-leave(void)
-{
+void leave(void) {
 	sem_post(sd);
 }
 
-char *
-getmem(void)
-{
-	int fd;
-	char *mem;
-	
-	if ( (fd = shm_open("/message", O_RDWR|O_CREAT, 0666)) == -1 )
-		fatal("sh_open");
-	ftruncate(fd, SIZE);
-	if ( !(mem = mmap(NULL, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) )
-		fatal("mmap");
-	close(fd);
-	return mem;
-}
-
-int createConnection_IPC(int pid){
-	mem = getmem();
-	memset(msg, 0, SIZE);
+int createConnection_IPC(int pid) {
 	initmutex();
+	int shmid;
+	key_t key;
+	void *shm;
+
+	/*We name the shared memory segment, in this case 5678*/
+	key = 5678;
+
+	/*Create the shared memory segment*/
+	if ((shmid = shmget(key, SHMSZ, IPC_CREAT | 0666)) < 0) {
+		perror("shmget");
+	}
+
+	/*Attach segment to data space*/
+	if ((shm = shmat(shmid, NULL, 0)) < 0) {
+		perror("shmat");
+	}
+
+	return openClient_IPC(pid);
 }
 
-int openClient_IPC(int pid){
-	mem = getmem();
-	initmutex();
+int openClient_IPC(int pid) {
+	int shmid;
+	key_t key;
+	void *shm;
+
+	/*Get the segment id, same as the server one*/
+	key = 5678;
+
+	/*Locate the shared memory segment*/
+	if ((shmid = shmget(key, SHMSZ, 0666)) < 0) {
+		perror("shmget");
+	}
+
+	/*Attach segment to data space*/
+	if ((shm = shmat(shmid, NULL, 0)) < 0) {
+		perror("shmat");
+	}
+
+	Client* client = newClientNode();
+	client->pid = pid;
+	printf("%d\n", shmid);
+	client->fd = shmid;
+	client->shm = shm;
+	client->next = clients;
+	clients = client;
+	printf("Registering client %d\n", pid);
+	return shmid;
 }
 
-void sendData_IPC(int pid, void* msg, size_t size){
-
+void sendData_IPC(int pid, void* msg, size_t size) {
+	int status;
+	void * shm = getClientSHM(pid);
 	enter();
-	memcpy(mem, msg, size);
+	memcpy(shm, msg, size);
 	leave();
-
 }
 
-void* listenMessage_IPC(int pid, size_t messageSize){
+void* listenMessage_IPC(int pid, size_t messageSize) {
 	void* data = malloc(messageSize);
 	enter();
-	memcpy(data, mem, messageSize);
+
+	void * shm = getClientSHM(pid);
+	enter();
+	memcpy(data, shm, messageSize);
 	leave();
-	if(data == NULL){
-		listenMessage_IPC(pid,messageSize);
-	}else{
+
+	if (data == NULL) { //TODO:Retry?, ojo con esto loop recursivo raro
+		listenMessage_IPC(pid, messageSize);
+	} else {
 		return data;
 	}
 }
 
-int acceptConnection_IPC(){
-
+void* getClientSHM(int pid) {
+	Client* aux = clients;
+	while (aux != NULL) {
+		if (aux->pid == pid) {
+			return aux->shm;
+		}
+		aux = aux->next;
+	}
+	return NULL;
 }
 
-void closeConnection_IPC(int pid){
+/*
+ int acceptConnection_IPC() {
 
-}
+ }
 
-void registerClient_IPC(int pid, int fd){
+ void closeConnection_IPC(int pid) {
 
-}
+ }
+
+ void registerClient_IPC(int pid, int fd) {
+
+ }
+ */

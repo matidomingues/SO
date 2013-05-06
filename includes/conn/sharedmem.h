@@ -1,23 +1,25 @@
 #ifndef _SHAREDMEM_H_
 #define _SHAREDMEM_H_
 
-#include <sys/socket.h>
-#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
+#include <string.h>
+//#include <sys/stat.h>
+//#include <sys/mman.h>
 #include <semaphore.h>
+#include <fcntl.h>
 
 typedef struct _client{
 	int pid;
 	int fd;
+	void * shm;
 	struct _client * next;
 }Client;
 
-#define SIZE 1000
-
+//#define SIZE 1000
 
 int createConnection_IPC(int pid);
 

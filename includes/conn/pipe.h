@@ -10,26 +10,36 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-typedef struct _client{
+typedef struct _client {
 	int pid;
 	int write;
 	int read;
 	struct _client * next;
-}Client;
+} Client;
 
-void sendData_IPC(int id, void* msg, size_t size);
-void openClient_IPC(int pid);
-void createConnection_IPC(int id);
-void* listenMessage_IPC(int client, size_t messageSize);
+/*Creates Server Pipe*/
+int createConnection_IPC(int pid);
 
+/*Creates Client Pipe*/
+int openClient_IPC(int pid);
+
+/*Writes to Pipe*/
+void sendData_IPC(int pid, void* msg, size_t size);
+
+/*Reads from Pipe*/
+void* listenMessage_IPC(int pid, size_t messageSize);
+
+/*Establishes pipe connection*/
 int acceptConnection_IPC();
 
+/*Closes pipes*/
 void closeConnection_IPC(int pid);
 
+/*Registers client*/
 void registerClient_IPC(int pid, int fd);
 
+/*Redirection for pipe*/
 void clientRedirection_IPC(int pid, int client);
-
 void clientRedirectionCreate_IPC(int pid);
 
 #endif

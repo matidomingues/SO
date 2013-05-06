@@ -42,10 +42,13 @@ void sendData_IPC(int pid, void* msg, size_t size);
 /*Reads from Message Queue*/
 void* listenMessage_IPC(int pid, size_t messageSize);
 
+/*Establishes connection*/
 int acceptConnection_IPC();
 
+/*Closes MQ*/
 void closeConnection_IPC(int pid);
 
+/*Registers client*/
 void registerClient_IPC(int pid, int fd);
 
 void clientRedirection_IPC(int pid, int client);

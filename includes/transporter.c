@@ -1,5 +1,5 @@
 #include "transporter.h"
-#include "conn/socket.h"
+#include "conn/pipe.h"
 
 void createConnection(int id){
 	createConnection_IPC(id);
@@ -27,4 +27,12 @@ void closeConnection(int pid){
 
 void registerClient(int pid, int fd){
 	registerClient_IPC(pid, fd);
+}
+
+void clientRedirection(int pid, int client){
+	clientRedirection_IPC(pid, client);
+}
+
+void clientRedirectionCreate(int pid){
+	clientRedirectionCreate_IPC(pid);
 }

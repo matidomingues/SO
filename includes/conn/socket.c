@@ -175,3 +175,11 @@ void registerClient_IPC(int pid, int fd){
 	printf("Registering client %d\n", pid);
 
 }
+
+void clientRedirection_IPC(int pid, int client){
+	return;
+}
+
+void clientRedirectionCreate_IPC(int pid){
+	return;
+}

@@ -32,4 +32,8 @@ void closeConnection_IPC(int pid);
 
 void registerClient_IPC(int pid, int fd);
 
+void clientRedirection_IPC(int pid, int client);
+
+void clientRedirectionCreate_IPC(int pid);
+
 #endif

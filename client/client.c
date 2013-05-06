@@ -204,7 +204,9 @@ void readConsole() {
 
 int main() {
 	openClient(0);
+	clientRedirectionCreate(getpid());
 	sendData(0, fillMessageData("client", "register", ""), sizeof(Message));
+	clientRedirection(0, getpid());
 	getResponce(0);
 	while (1) {
 		readConsole();

@@ -156,6 +156,7 @@ void clientRedirectionCreate_IPC(int pid){
 }
 
 void clientRedirection_IPC(int pid, int client){
+	close(getClientFile(pid, 0));
 	Client* data = getClient(client);
 	char* route = getFullPath(client);
 	if(data == NULL){

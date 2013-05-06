@@ -1,6 +1,8 @@
 #ifndef _MAIL_H_
 #define _MAIL_H_
 
+#include <time.h>
+
 typedef struct mail {
 	char from[15];
 	char to[15];

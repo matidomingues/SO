@@ -1,5 +1,5 @@
 #include "transporter.h"
-#include "conn/pipe.h"
+#include "conn/mesqueue.h"
 
 void createConnection(int id){
 	createConnection_IPC(id);

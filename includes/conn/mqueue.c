@@ -76,7 +76,7 @@ void* listenMessage_IPC(int pid, size_t messageSize) {
 	/*Read from */
 	status = msgrcv(mq, &Msg, sizeof(Msg), 1, 0);
 
-	info = Msg.data;
+	info = Msg.data;	//return Msg.data directo? Preg a Mati.
 	if (status <= 0) {
 		free(info);
 		//perror("read");

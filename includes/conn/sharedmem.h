@@ -7,19 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <sys/stat.h>
-//#include <sys/mman.h>
 #include <semaphore.h>
 #include <fcntl.h>
 
 typedef struct _client{
 	int pid;
-	int fd;
+	int shmid;
 	void * shm;
 	struct _client * next;
 }Client;
-
-//#define SIZE 1000
 
 int createConnection_IPC(int pid);
 

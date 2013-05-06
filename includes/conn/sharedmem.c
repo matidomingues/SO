@@ -28,11 +28,8 @@ void leave(void) {
 int createConnection_IPC(int pid) {
 	initmutex();
 	int shmid;
-	key_t key;
+	key_t key = 5678;
 	void *shm;
-
-	/*We name the shared memory segment, in this case 5678*/
-	key = 5678;
 
 	/*Create the shared memory segment*/
 	if ((shmid = shmget(key, SHMSZ, IPC_CREAT | 0666)) < 0) {
@@ -49,11 +46,8 @@ int createConnection_IPC(int pid) {
 
 int openClient_IPC(int pid) {
 	int shmid;
-	key_t key;
+	key_t key = 5678;
 	void *shm;
-
-	/*Get the segment id, same as the server one*/
-	key = 5678;
 
 	/*Locate the shared memory segment*/
 	if ((shmid = shmget(key, SHMSZ, 0666)) < 0) {
@@ -68,11 +62,12 @@ int openClient_IPC(int pid) {
 	Client* client = newClientNode();
 	client->pid = pid;
 	printf("%d\n", shmid);
-	client->fd = shmid;
+	client->shmid = shmid;
 	client->shm = shm;
 	client->next = clients;
 	clients = client;
 	printf("Registering client %d\n", pid);
+
 	return shmid;
 }
 
@@ -111,16 +106,47 @@ void* getClientSHM(int pid) {
 	return NULL;
 }
 
-/*
- int acceptConnection_IPC() {
+void* getClientSHMID(int pid) {
+	Client* aux = clients;
+	while (aux != NULL) {
+		if (aux->pid == pid) {
+			return aux->shmid;
+		}
+		aux = aux->next;
+	}
+	return NULL;
+}
 
- }
+int acceptConnection_IPC() {
+	return getClientSHMID(0);
+}
 
- void closeConnection_IPC(int pid) {
+void closeConnection_IPC(int pid) {
+	Client* data = getClient(pid);
+	/*Detach*/
+	shmdt(data->shmid);
+	/*Remove*/
+	shmctl(data->shmid, IPC_RMID, NULL);
+}
 
- }
+/*TODO:Chequear esto*/
+void registerClient_IPC(int pid, int shmid) {
+	int pidn = pid;
+	Client* client;
+	pid = (pid * 10) + 1;
 
- void registerClient_IPC(int pid, int fd) {
+	key_t key = 5678;
+	shmid = shmget(key, SHMSZ, 0666);
+	void * shm = shmat(shmid, NULL, 0);
 
- }
- */
+	if ((client = getClient(pidn)) == NULL) {
+		client = newClientNode();
+		client->pid = pidn;
+		client->next = clients;
+		clients = client;
+	}
+
+	printf("Client: %d\n", client->pid);
+	client->shmid = shmid;
+	client->shm = shm;
+}

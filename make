@@ -1,2 +1,0 @@
-gcc -o bin/client client/client.c includes/transporter.c includes/conn/socket.c -g
-gcc -o bin/server server/server.c includes/linkedlist.c includes/csv.c includes/transporter.c includes/conn/socket.c includes/clients.c -g -pthread

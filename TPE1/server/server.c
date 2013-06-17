@@ -315,17 +315,18 @@ void sendUserFee(Message* msg){
 }
 
 void dumpAll(int sig) {
-	signal(sig,SIG_IGN);
-	closeConnection(0);
-	printf("Dumping data \n");
-	dumpUsersToCSVFile(users);
-	int i;
-	node* current = users->head;
-	for (i = 0; i < length(users); i++) {
-		dumpMailsToCSVFile(((user*) (current->val))->mail_list, (user*)current->val);
-		current = current->next;
-	}
-	exit(0);
+	//signal(sig,SIG_IGN);
+	printf("corto\n");
+	// closeConnection(0);
+	// printf("Dumping data \n");
+	// dumpUsersToCSVFile(users);
+	// int i;
+	// node* current = users->head;
+	// for (i = 0; i < length(users); i++) {
+	// 	dumpMailsToCSVFile(((user*) (current->val))->mail_list, (user*)current->val);
+	// 	current = current->next;
+	// }
+	//exit(0);
 }
 
 static void *
@@ -454,22 +455,22 @@ int main() {
     initPthread();
 
 	while(1){
-		fd = acceptConnection(0);
-		data = (Message*)listenMessage(fd, sizeof(Message));
-		if(data != NULL){
-			if(strcmp(data->resource, "client") == 0){
-				if(strcmp(data->method, "register") == 0){
-					registerClient(data->referer, fd);
-					cloneConnection(data);
-				}else{
-					printf("Error on basic connection to server 2\n");
-				}
-			}else{
-				printf("Error on basic connection to server 1\n");
-			}
+		// fd = acceptConnection(0);
+		// data = (Message*)listenMessage(fd, sizeof(Message));
+		// if(data != NULL){
+		// 	if(strcmp(data->resource, "client") == 0){
+		// 		if(strcmp(data->method, "register") == 0){
+		// 			registerClient(data->referer, fd);
+		// 			cloneConnection(data);
+		// 		}else{
+		// 			printf("Error on basic connection to server 2\n");
+		// 		}
+		// 	}else{
+		// 		printf("Error on basic connection to server 1\n");
+		// 	}
 
-		}
+		// }
 	}
-	closeConnection(0);
+	// closeConnection(0);
 	return 1;
 }

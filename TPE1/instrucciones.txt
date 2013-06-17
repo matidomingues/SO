@@ -1,0 +1,34 @@
+1.0.0-Instrucciones
+
+1.0.1-Compilar
+Para compilar, ejecutar ./make
+El mismo creará 2 ejecutables 'server' y 'client', en la carpeta /bin/server y /bin/client respectivamente
+
+1.1.0-Ejecutar
+Hay que ejecutar en 2 consolas distintas. Primero ./server y luego en la otra consola ./client.
+Si el server no esta corriendo cuando un cliente intenta acceder al pipe, el cliente arroja PIPE_ERROR.
+
+1.2.0-Menu Principal
+En ./client, existen 2 opciones, 'Login' y 'Registrarse'.
+
+1.2.1-Login
+Permite a un usuario ya registreado loguearse, el mismo debe existir en el archivo users.csv. Si no existe el usuario, se informa por consola y se retorna al menu principal.
+
+Se requiere el username y password, separados por una ",", por ejemplo: "user,pass"
+
+1.2.2-Registrarse
+Registrarse, permite a un usuario nuevo registrar su usuario y contraseña. Una vez ingresados los mismos, seran guardados en el archivo users.csv
+
+Una vez registrado, el usuario puede hacer login.
+
+1.3.0-Menu de email
+3 opciones, Enviar Email, Recibir Emails, Consultar Tarifación
+
+1.3.1-Enviar Email
+Mediante el ingreso del destinatario, asunto, cuerpo y la eleccion de agregar o no un attachment, se puede enviar un mail. El mismo será archivado en el archivo personal del destinatario.
+
+1.3.2-Recibir Emails,
+Muestra los mails que el usuario logueado a recibido.
+
+1.3.3-Consultar Tarifación
+Muestra la tarifación actual del usuario logueado.

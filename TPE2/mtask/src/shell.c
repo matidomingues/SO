@@ -22,6 +22,7 @@ cmdtab[] =
 	{	"camino_ns",	camino_ns_main },
 	{	"prodcons",		prodcons_main },
 	{	"divz",			divz_main },
+	{	"chkdsk",		chkdsk_main },
 	{ }
 };
 

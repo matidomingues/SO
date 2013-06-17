@@ -2,6 +2,8 @@ bits 32
 
 global inb
 global outb
+global inw
+global outw
 
 section .text
 
@@ -23,3 +25,30 @@ outb:
 	pop edx
 	ret
 
+; unsigned inw(unsigned ioaddr);
+inw:
+	push ebp
+	mov ebp, esp
+	push dx
+
+	mov eax, 0
+	mov dx, [ebp+8]
+	in ax, dx
+
+	pop dx
+	leave
+	ret
+
+; void outw(unsigned ioaddr, unsigned data;
+outw:
+	push ebp
+	mov ebp, esp
+	pusha
+
+	mov dx, [ebp+8]
+	mov ax, [ebp+12]
+	out dx, ax
+
+	popa
+	leave
+	ret

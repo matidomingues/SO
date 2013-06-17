@@ -8,6 +8,8 @@
 
 unsigned inb(unsigned ioaddr);
 void outb(unsigned ioaddr, unsigned data);
+unsigned inw(unsigned ioaddr);
+void outw(unsigned ioaddr, unsigned data);
 
 /* string.c */
 
@@ -56,6 +58,5 @@ unsigned separate(char *s, char *field[], unsigned nfields);
 /* atoi.c **/
 
 int atoi(const char *s);
-
 
 #endif

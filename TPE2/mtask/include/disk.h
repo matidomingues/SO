@@ -51,13 +51,13 @@ typedef struct disk_cmd {
  * El offset comienza a partir del 0 y cada sector tiene 512 bytes. En caso que offset >= 512, se normaliza a 512 e incrementa el
  * sector (offset / 512) veces.
  */
-void ata_write(int ata, void* msg, int bytes, unsigned short sector, int offset);
+void ata_write(int ata, char* msg, int bytes, unsigned short sector, int offset);
 
 /* Lee del disco ata, los bytes indicados por parametro a msg desde el sector "sector" con el offset "offset".
  * El offset comienza a partir del 0 y cada sector tiene 512 bytes. En caso que offset >= 512, se normaliza a 512 e incrementa el
  * sector (offset / 512) veces.
  */
-void ata_read(int ata, void* msg, int bytes, unsigned short sector, int offset);
+void ata_read(int ata, char* msg, int bytes, unsigned short sector, int offset);
 
 /* Devuelve el registro de estado del disco*/
 unsigned short ata_getStatusRegister(int ata);

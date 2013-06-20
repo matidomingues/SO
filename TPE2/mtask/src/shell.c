@@ -23,6 +23,9 @@ cmdtab[] =
 	{	"prodcons",		prodcons_main },
 	{	"divz",			divz_main },
 	{	"chkdsk",		chkdsk_main },
+	{	"write",		diskwrite_main },
+	{	"read",			diskread_main },
+	{	"disksize",		disksize_main },
 	{ }
 };
 

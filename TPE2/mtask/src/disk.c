@@ -2,11 +2,11 @@
 
 #define BIT(i) (1 << (i))
 
-#define IS_REMOVABLE(D)    printk("%ses removible\n", (D & BIT(7)) ? "" : "No ")
-#define IS_ATA_DRIVE(D)    printk("%ses ATA\n", (D & BIT(15)) ? "No " : "")
-#define DMA_SUP(D)         printk("%ssoporta DMA\n", (D & BIT(8)) ? "" : "No ")
-#define LBA_SUP(D)         printk("%ssoporta LBA\n", (D & BIT(9)) ? "" : "No ")
-#define DMA_QUEUED_SUP(D)  printk("%ssoporta DMA QUEUED\n", (D & BIT(1)) ? "" : "No ")
+#define IS_REMOVABLE(D)    printk("Removible: %s\n", (D & BIT(7)) ? "Yes" : "No")
+#define IS_ATA_DRIVE(D)    printk("ATA: %s\n", (D & BIT(15)) ? "No" : "Yes")
+#define DMA_SUP(D)         printk("DMA: %s\n", (D & BIT(8)) ? "Yes" : "No")
+#define LBA_SUP(D)         printk("LBA: %s\n", (D & BIT(9)) ? "Yes" : "No")
+#define DMA_QUEUED_SUP(D)  printk("DMA QUEUED: %s\n", (D & BIT(1)) ? "Yes" : "No")
 
 void sendComm(int ata, int rdwr, unsigned short sector);
 void _read(int ata, char * ans, unsigned short sector, int offset, int count);
@@ -24,7 +24,7 @@ void ata_normalize(unsigned short* sector, int* offset) {
 	}
 }
 
-void ata_read(int ata, void* ans, int bytes, unsigned short sector, int offset) {
+void ata_read(int ata, char* ans, int bytes, unsigned short sector, int offset) {
 	mt_cli();
 	if (ata != ATA0 && ata != ATA1) {
 		printk("No existe el disco %d - [%d, %d]\n", ata, sector, offset);
@@ -75,7 +75,7 @@ void translateBytes(char * ans, unsigned short databyte) {
 	ans[1] = (databyte >> 8) & 0xFF;
 }
 
-void ata_write(int ata, void * msg, int bytes, unsigned short sector,
+void ata_write(int ata, char * msg, int bytes, unsigned short sector,
 		int offset) {
 	mt_cli();
 	if (ata != ATA0 && ata != ATA1) {
@@ -127,8 +127,9 @@ void writeDataToRegister(int ata, char upper, char lower) {
 	mt_cli();
 	unsigned short out;
 	// Wait for driver's ready signal.
-	while (!(inw(ata + WIN_REG7) & BIT(3)))
-		;
+	while (!(inw(ata + WIN_REG7) & BIT(3))) {
+		//printk("Writing data register - Waiting for disk to be ready...\n");;
+	}
 	out = upper << 8 | (lower & 0xff);
 	outw(ata + WIN_REG0, out);
 	mt_sti();
@@ -138,8 +139,8 @@ unsigned short getDataRegister(int ata) {
 	mt_cli();
 	unsigned short ans;
 	// Wait for driver's ready signal.
-	while (!(inw(ata + WIN_REG7) & BIT(3))) {
-		printk("Waiting for disk to be ready...\n");
+	while (!(inw(ata + WIN_REG7) & BIT(3)) ) {
+		//printk("Reading data register - Waiting for disk to be ready...\n");
 	}
 	ans = inw(ata + WIN_REG0);
 	mt_sti();
@@ -174,7 +175,7 @@ void identifyDevice(int ata) {
 	outb(ata + WIN_REG7, WIN_IDENTIFY);
 }
 
-/*Checks disk features*/
+/*Checks supported disk features*/
 void ata_checkDrive(int ata) {
 	printk("Identificando dispositivo...\n ");
 	switch (ata) {

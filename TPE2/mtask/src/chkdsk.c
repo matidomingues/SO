@@ -1,6 +1,6 @@
-#include "disk.h"
+#include "../include/disk.h"
 
 int chkdsk_main(int argc, char **argv) {
-	ata_checkDrive(ATA0);
+	disk_identify();
 	return 0;
 }

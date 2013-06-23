@@ -2,12 +2,6 @@
 
 #define BIT(i) (1 << (i))
 
-#define IS_REMOVABLE(D)    printk("Removible: %s\n", (D & BIT(7)) ? "Yes" : "No")
-#define IS_ATA_DRIVE(D)    printk("ATA: %s\n", (D & BIT(15)) ? "No" : "Yes")
-#define DMA_SUP(D)         printk("DMA: %s\n", (D & BIT(8)) ? "Yes" : "No")
-#define LBA_SUP(D)         printk("LBA: %s\n", (D & BIT(9)) ? "Yes" : "No")
-#define DMA_QUEUED_SUP(D)  printk("DMA QUEUED: %s\n", (D & BIT(1)) ? "Yes" : "No")
-
 void sendComm(int ata, int rdwr, unsigned short sector);
 void _read(int ata, char * ans, unsigned short sector, int offset, int count);
 void _write(int ata, char * msg, int bytes, unsigned short sector, int offset);
@@ -99,6 +93,7 @@ void ata_write(int ata, char * msg, int bytes, unsigned short sector,
 		} else { // The remaining msg fits in the actual sector
 			size = bytes;
 			_write(ata, ans, size, sector, offset);
+			wait(1);
 			offset += size;
 			bytes = 0;
 			ans += size;
@@ -139,7 +134,7 @@ unsigned short getDataRegister(int ata) {
 	mt_cli();
 	unsigned short ans;
 	// Wait for driver's ready signal.
-	while (!(inw(ata + WIN_REG7) & BIT(3)) ) {
+	while (!(inw(ata + WIN_REG7) & BIT(3))) {
 		//printk("Reading data register - Waiting for disk to be ready...\n");
 	}
 	ans = inw(ata + WIN_REG0);
@@ -175,36 +170,32 @@ void identifyDevice(int ata) {
 	outb(ata + WIN_REG7, WIN_IDENTIFY);
 }
 
-/*Checks supported disk features*/
-void ata_checkDrive(int ata) {
-	printk("Identificando dispositivo...\n ");
-	switch (ata) {
-	case ATA0:
-		printk("ATA0...\n");
-		break;
-	case ATA1:
-		printk("ATA1...\n");
-		break;
-	}
-	printk("\n");
-	identifyDevice(ata);
-	unsigned short data = 0;
+void disk_identify() {
+	identifyDevice(ATA0);
+
+	unsigned short reg = 0;
 	int i;
+	/*Word 60 y 61 contienen el LBA total*/
+	short word60, word61;
+	printk("Identificando dispositivo ATA0.\n\n");
 	for (i = 0; i < 255; i++) {
-		data = getDataRegister(ata);
-		switch (i) {
-		case 0:
-			//printk("Data returned (%d): %d\n", i,data);
-			IS_REMOVABLE(data);
-			IS_ATA_DRIVE(data);
-			break;
-		case 49:
-			DMA_SUP(data);
-			LBA_SUP(data);
-			break;
-		case 83:
-			DMA_QUEUED_SUP(data);
-			break;
+		reg = getDataRegister(ATA0);
+		if (i == 0) {
+			printk("\tRemovible: %s\n", (reg & BIT(7)) ? "Si" : "No");
+			printk("\tATA: %s\n", (reg & BIT(15)) ? "No" : "Si");
+			printk("\tID: ");
+		} else if (i >= 27 && i <= 46) {
+			if (reg > 0) {
+				printk("%c%c", (reg & 0xFF00) >> 8, reg & 0xFF);
+			}
+		} else if (i == 49) {
+			printk("\n");
+			printk("\tLBA: %s\n", (reg & BIT(9)) ? "Si" : "No");
+		} else if (i == 60) {
+			word60 = reg;
+		} else if (i == 61) {
+			word61 = reg;
 		}
 	}
+	printk("\tCapacidad: %dMB\n", ((word61 << 14) + word60) / SECTOR_SIZE);
 }

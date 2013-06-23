@@ -65,9 +65,6 @@ unsigned short ata_getStatusRegister(int ata);
 /* Identifica el disco*/
 void identifyDevice(int ata);
 
-/*Chequea los features que soporta el disco*/
-void ata_checkDrive(int ata);
-
 unsigned short getErrorRegister(int ata);
 
 /*
@@ -76,5 +73,8 @@ unsigned short getErrorRegister(int ata);
  * sector = sector + offset / 512
  */
 void ata_normalize(unsigned short* sector, int* offset);
+
+/*Muestra las caracteristicas del disco*/
+void disk_identify();
 
 #endif

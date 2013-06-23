@@ -3,7 +3,7 @@
 
 #include "kernel.h"
 
-/* I/O Ports used by winchester disk controller. */
+/* I/O Ports used by Winchester disk controller. */
 #define ATA0 0x1f0
 #define ATA1 0x170
 

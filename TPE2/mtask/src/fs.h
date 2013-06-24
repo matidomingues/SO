@@ -10,6 +10,7 @@ typedef struct file {
 	char name[128];
 	int disksector;
 	int size = 512;
+	struct directory parent;
 } file;
 
 typedef struct directory {
@@ -18,7 +19,9 @@ typedef struct directory {
 	int subdircount;
 	struct directory parent;
 	struct file files[MAX_FILES];
-	struct directory subdirectories[255];
+	struct directory subdirectories[MAX_DIRECTORIES];
+	int disksector;
+	int size = 512;
 } directory;
 
 directory root = createFS();

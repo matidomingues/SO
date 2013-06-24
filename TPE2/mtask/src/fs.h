@@ -23,7 +23,6 @@ typedef struct directory {
 	struct file files[MAX_FILES];
 	struct directory subdirectories[MAX_DIRECTORIES];
 	int disksector;
-	int size = 512;
 } directory;
 
 directory root = createFS();

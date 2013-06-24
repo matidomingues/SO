@@ -104,9 +104,10 @@ file createFile(char* name, int size){
 	for(i=0; i< (int)(size/512)+1; i++){
 		setSector(sector+i);
 	}
-	elem.sector = sector;
+	elem.disksector = sector;
 	elem.parent = currentdir;
 	elem.size = size;
+	return elem;
 }
 
 void allocateFile(file elem){
@@ -224,6 +225,65 @@ void deleteDirectory(directory elem){
 	clearSector(elem.disksector, 1);
 
 
+}
+
+directory createDirectory(){
+	directory elem;
+	int i, sector;
+	memcpy(name, elem.name, strlen(name)+1);
+	sector=getFileFreeSector(1);
+	setSector(sector);
+	elem.sector = sector;
+	elem.parent = currentdir;
+	elem.disksector = sector;
+	elem.filecount = 0;
+	elem.subdircount = 0;
+	for(i=0; i<MAX_FILES; i++){
+		elem.files[i] = NULL;
+	}
+	for(i=0; i<MAX_DIRECTORIES; i++){
+		elem.subdirectories[i] = NULL;
+	}
+}
+
+void allocateDirectory(directory elem){
+	int loc = 0, i;
+	ata_write(ATA0, elem.name, sizeof(elem.name), elem.sector, loc);
+	loc+= sizeof(elem.name)
+	ata_write(ATA0, elem.size, sizeof(elem.size), elem.sector, loc);
+	loc+= sizeof(elem.size);
+	if(elem.parent != NULL){
+		ata_write(ATA0, elem.parent.disksector, sizeof(elem.parent.disksector), elem.sector, loc);
+	}else{
+		ata_write(ATA0, -1, sizeof(int), elem.sector, loc);
+	}
+	for(i=0; i<MAX_FILES; i++){
+		if(elem.files[i]!= NULL){
+			ata_write(ATA0, elem.files[i].sector, sizeof(int), elem.sector, loc);
+			loc += sizeof(int);
+		}
+	}
+	ta_write(ATA0, -1, sizeof(int), elem.sector, loc);
+	loc += sizeof(int);
+	for(i=0; i<MAX_FILES; i++){
+		if(elem.files[i]!= NULL){
+			ata_write(ATA0, elem.files[i].sector, sizeof(int), elem.sector, loc);
+			loc += sizeof(int);
+		}
+	}
+	ta_write(ATA0, -1, sizeof(int), elem.sector, loc);
+	loc += sizeof(int);
+
+}
+
+void mkdir(char* arg){
+	directory elem = getDirectoryFromName(arg);
+	if(elem != NULL){
+		printf("Directory already exists\n");
+		return;
+	}
+	elem = createDirectory();
+	allocateDirectory(elem);
 }
 
 int rm(char* arg){

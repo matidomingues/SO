@@ -1,5 +1,5 @@
-#include "kernel.h"
-#include "apps.h"
+#include "../include/kernel.h"
+#include "../include/apps.h"
 
 #define BUFSIZE 200
 #define NARGS 20
@@ -25,7 +25,6 @@ cmdtab[] =
 	{	"chkdsk",		chkdsk_main },
 	{	"write",		diskwrite_main },
 	{	"read",			diskread_main },
-	{	"disksize",		disksize_main },
 	{ }
 };
 

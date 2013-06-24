@@ -25,6 +25,28 @@ void initSectors(){
 	}
 }
 
+int getSector(int sector){
+	return sectors[sector];
+}
+
+int getFileFreeSector(int ammount){
+        int i, start, w;
+        for(i=_FILETABLE_SECTOR_START;i<_MAX_SECTORS;i++){
+            if(!getSector(i)){
+            	start = i;
+            	for(w=0; w<ammount; i++){
+            		if(getsector(i+w) != 0){
+            			break;
+            		}
+            	}
+            	if(w == ammount){
+            		return start;
+            	}
+            }
+        }
+        return -1;
+}
+
 int getFreeSector(){
 	int i;
 	for(i=0; i<MAX_SECTORS; i++){
@@ -74,10 +96,47 @@ directory getDirectoryFromName(char* name){
 	return NULL;
 }
 
+file createFile(char* name, int size){
+	file elem;
+	int i, sector;
+	memcpy(name, elem.name, strlen(name)+1);
+	sector=getFileFreeSector((int)(size/512)+1);
+	for(i=0; i< (int)(size/512)+1; i++){
+		setSector(sector+i);
+	}
+	elem.sector = sector;
+	elem.parent = currentdir;
+	elem.size = size;
+}
+
+void allocateFile(file elem){
+	int loc = 0;
+	ata_write(ATA0, elem.name, sizeof(elem.name), elem.sector, loc);
+	loc+= sizeof(elem.name)
+	ata_write(ATA0, elem.size, sizeof(elem.size), elem.sector, loc);
+	loc+= sizeof(elem.size);
+	if(elem.parent != NULL){
+		ata_write(ATA0, elem.parent.disksector, sizeof(elem.parent.disksector), elem.sector, loc);
+	}else{
+		ata_write(ATA0, -1, sizeof(int), elem.sector, loc);
+	}
+}
+
+void addChild(file elem, directory parent){
+	int i = 0;
+	parent.filecount +=1;
+	for(i=0; i<MAX_FILES; i++){
+		if(parent.files[i] == NULL){
+			parent.files[i]=elem;
+		}
+	}
+}
+
 file* openFile(char* name){
 	file elem = getFileFromName(name);
 	if(elem == NULL){
-		return -1;
+		elem = createFile(name, DEFAULT_FILESIZE);
+		allocateFile(elem);
 	}else{
 		return &elem;
 	}
@@ -114,6 +173,10 @@ void cd(char* arg){
 	}
 }
 
+void updateSectorsOnDisk(){
+	ata_write(ATA0, sectors, sizeof(sectors), 0, 0);
+}
+
 void killChildFile(file elem, directory parent){
 	parent.filecount -= 1;
 	for(i=0; i<MAX_FILES; i++){
@@ -123,6 +186,7 @@ void killChildFile(file elem, directory parent){
 			}
 		}
 	}
+	updateSectorsOnDisk();
 }
 
 void deleteFile(file elem){
@@ -140,8 +204,8 @@ void killChild(directory elem, directory parent){
 			}
 		}
 	}
+	updateSectorsOnDisk();
 }
-
 
 void deleteDirectory(directory elem){
 	int i;

@@ -5,6 +5,8 @@
 #define SECTOR_SIZE 512
 #define MAX_FILES 100
 #define MAX_DIRECTORIES 100
+#define DEFAULT_FILESIZE 512
+#define FILETABLE_SECTOR_START 10
 
 typedef struct file {
 	char name[128];

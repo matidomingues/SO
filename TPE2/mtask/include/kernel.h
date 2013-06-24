@@ -39,6 +39,7 @@ extern Task_t * volatile mt_fpu_task;
 extern unsigned long long volatile mt_ticks;
 void mt_main(void);
 bool mt_select_task(void);
+void wait(int msecs);
 
 /* irq.c */
 

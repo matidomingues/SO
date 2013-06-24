@@ -187,6 +187,7 @@ void killChildFile(file elem, directory parent){
 			}
 		}
 	}
+
 	updateSectorsOnDisk();
 }
 
@@ -223,9 +224,13 @@ void deleteDirectory(directory elem){
 	}
 	killChild(elem, elem.parent);
 	clearSector(elem.disksector, 1);
-
-
 }
+
+void deleteFile(directory elem){
+	killChildFile(elem, elem.parent);
+	clearSector(elem.disksector, (int)(elem.size)+1);
+}
+
 
 directory createDirectory(){
 	directory elem;
@@ -271,7 +276,7 @@ void allocateDirectory(directory elem){
 			loc += sizeof(int);
 		}
 	}
-	ta_write(ATA0, -1, sizeof(int), elem.sector, loc);
+	ata_write(ATA0, -1, sizeof(int), elem.sector, loc);
 	loc += sizeof(int);
 
 }
@@ -288,8 +293,59 @@ void mkdir(char* arg){
 
 int rm(char* arg){
 	directory elem = getDirectoryFromName(arg);
+	if(elem == NULL){
+		file data = getFileFromName(arg);
+		if(data != NULL){
+			deleteFile(data);
+		}else{
+			return -1;
+		}
+	}
 	if(elem.parent == NULL){
 		return -1;
 	}
 	deleteDirectory(elem);
 }
+
+void readFile(file elem, char* elem){
+	int sector = elem.sector + 1;
+	ata_read(ATA0, elem, elem.size, elem.sector, 0);
+}
+
+int writeFile(file file, char * buff, int size){
+        if( size > file.size){
+                return -2;
+        }
+        int sector = file->sector+1;
+        int loc = 0;
+
+        ata_write(ATA0, buff, size, sector, loc);
+        return 0;
+}
+
+int edit(char * arg){
+        openFile(arg, 0);
+        File * file = getFileFromName(arg);
+        if(file == NULL){
+        	return -1;
+        }
+        printf("Editing %s:\n", file->name);
+        char * tmp = (char *) malloc(512);
+
+        scanf("%s",tmp);
+        writeFile(file, tmp, strlen(tmp));
+}
+
+int cat(char * arg){
+       file data = getDirectoryFromName(arg);
+        if(file == NULL){
+			return -1;        	
+        }
+        char * tmp = (char*) malloc(data->size);
+
+        readFile(data, tmp, data->size);
+        printf("File %s:\n", data->name);
+        printf("%s\nEOF\n", tmp);
+        return 0;
+}
+

@@ -111,7 +111,7 @@ int getFileFreeSector(int ammount) {
 	for (i = FILETABLE_SECTOR_START; i < MAX_SECTORS; i++) {
 		if ((int) (getSector(i)) == 0) {
 			start = i;
-			printk("entro con %d\n", i);
+			//printk("entro con %d\n", i);
 			for (w = 0; w < ammount; w++) {
 				if ((int) (getSector(i + w)) != 0) {
 					break;
@@ -312,7 +312,7 @@ directory* createDirectory(char* arg) {
 	int sector;
 	directory* elem = createBaseDirectory();
 	memcpy(elem->name, arg, strlen(arg) + 1);
-	printk("directory name: %s\n", elem->name);
+	//printk("directory name: %s\n", elem->name);
 	sector = getFileFreeSector(1);
 	setSector(sector);
 	updateSectorsOnDisk();
@@ -343,8 +343,7 @@ void allocateDirectory(directory* elem) {
 	}
 	ata_write(ATA0, (char*) (&e), sizeof(int), elem->disksector, loc);
 	loc += sizeof(int);
-	printk("wrote elem on segment: %d and loc: %d\n", elem->disksector, loc);
-
+	//printk("wrote elem on segment: %d and loc: %d\n", elem->disksector, loc);
 }
 
 void readFile(file* elem, char* data) {

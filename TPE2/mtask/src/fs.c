@@ -1,4 +1,4 @@
-#include "../include/fs.h"
+#include "fs.h"
 
 void updateSectorsOnDisk();
 void allocateDirectory(directory* elem);
@@ -39,8 +39,8 @@ file* loadFile(int sector, directory* parent) {
 	elem->disksector = sector;
 	ata_read(ATA0, (char*) (&length), sizeof(int), sector, loc);
 	elem->size = length;
-	printk("name: %s, sector: %d, file size: %d\n", elem->name,
-			elem->disksector, length);
+	//printk("name: %s, sector: %d, file size: %d\n", elem->name,
+	//		elem->disksector, length);
 	return elem;
 }
 
@@ -238,52 +238,6 @@ file* openFile(char* name) {
 		updateSectorsOnDisk();
 	}
 	return elem;
-}
-
-int ls(int argc, char **argv) {
-	int i;
-//	cprintk(LIGHTBLUE, BLACK, "%s ", currentdir->name);
-	//printk("Directory: %s\n", currentdir->name);
-	char flag;
-	for (i = 0; i < MAX_DIRECTORIES; i++) {
-		flag = 1;
-		if (currentdir->subdirectories[i] != NULL) {
-			cprintk(LIGHTBLUE, BLACK, "%s ",
-					currentdir->subdirectories[i]->name);
-			//printk("%s\n", currentdir->subdirectories[i]->name);
-		}
-	}
-	for (i = 0; i < MAX_FILES; i++) {
-		flag = 1;
-		if (currentdir->files[i] != NULL) {
-			cprintk(LIGHTGREEN, BLACK, "%s ", currentdir->files[i]->name);
-			//printk("%s\n", currentdir->files[i]->name);
-		}
-	}
-	if (flag) {
-		printk("\n");
-	}
-	return 0;
-}
-
-int cd(int argc, char **argv) {
-	directory* elem;
-	if (strcmp(argv[1], "..") == 0) {
-		if (currentdir->parent != NULL) {
-			currentdir = currentdir->parent;
-		} else {
-			printk("Already on root\n");
-			return -1;
-		}
-	} else {
-		if ((elem = getDirectoryFromName(argv[1])) != NULL) {
-			currentdir = elem;
-		} else {
-			printk("Not a directory");
-			return -1;
-		}
-	}
-	return 0;
 }
 
 void updateSectorsOnDisk() {

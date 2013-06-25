@@ -1,42 +1,6 @@
-#include "../include/kernel.h"
-#include "../include/apps.h"
-
-#define BUFSIZE 200
-#define NARGS 20
-#define PROMPT "MT> "
-
-static struct cmdentry
-{
-	char *name;
-	int (*func)(int argc, char **argv);
-}
-cmdtab[] =
-{
-	{	"setkb",		setkb_main },
-	{	"shell",		shell_main },
-	{	"sfilo",		simple_phil_main },
-	{	"filo",			phil_main },
-	{	"xfilo",		extra_phil_main },
-	{	"afilo",		atomic_phil_main },
-	{	"camino",		camino_main },
-	{	"camino_ns",	camino_ns_main },
-	{	"prodcons",		prodcons_main },
-	{	"divz",			divz_main },
-	{	"chkdsk",		chkdsk_main },
-	{	"write",		diskwrite_main },
-	{	"read",			diskread_main },
-	{	"ls",			ls },
-	{	"mkdir",		mkdir },
-	{	"cat",			cat },
-	{	"cd",			cd },
-	{	"rm",			rm },
-	{	"edit",			edit },
-	{	"printsectors",	print_sectors },
-	{	"format",		format },
-	{	"touch",		touch },
-	{	"pwd",			pwd },
-	{ }
-};
+#include "kernel.h"
+#include "apps.h"
+#include "shell.h"
 
 int
 shell_main(int argc, char **argv)

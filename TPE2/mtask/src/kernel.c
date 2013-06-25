@@ -1,5 +1,5 @@
-#include "../include/kernel.h"
-#include "../include/apps.h"
+#include "kernel.h"
+#include "apps.h"
 
 #define CLOCKIRQ		0				/* interrupcion de timer */
 #define MIN_STACK		4096			/* tamaño de stack mínimo */ 

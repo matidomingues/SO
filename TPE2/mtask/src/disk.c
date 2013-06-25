@@ -1,4 +1,4 @@
-#include "../include/disk.h"
+#include "disk.h"
 
 #define BIT(i) (1 << (i))
 

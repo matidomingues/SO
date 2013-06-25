@@ -13,6 +13,8 @@
 #define NAME_LENGTH 64
 #define FILE_SYSTEM_VERSION "TP-SO-FILESYSTEM-0.1"
 
+extern struct directory* currentdir;
+
 typedef struct file {
 	char name[NAME_LENGTH];
 	int disksector;
@@ -29,5 +31,7 @@ typedef struct directory {
 	struct directory * subdirectories[MAX_DIRECTORIES];
 	int disksector;
 } directory;
+
+directory* getDirectoryFromName(char*);
 
 #endif

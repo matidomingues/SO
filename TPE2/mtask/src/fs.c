@@ -1,11 +1,5 @@
 #include "fs.h"
 
-void updateSectorsOnDisk();
-void allocateDirectory(directory* elem);
-directory* createDirectory(char* arg);
-void updateDirectoryOnDisk(directory* parent);
-directory* createBaseDirectory();
-
 char sectors[MAX_SECTORS];
 
 directory* currentdir = NULL;
@@ -351,35 +345,6 @@ void allocateDirectory(directory* elem) {
 	loc += sizeof(int);
 	printk("wrote elem on segment: %d and loc: %d\n", elem->disksector, loc);
 
-}
-
-int mkdir(int argc, char **argv) {
-	directory* elem = getDirectoryFromName(argv[1]);
-	if (elem == NULL) {
-		elem = createDirectory(argv[1]);
-		allocateDirectory(elem);
-		addDirectoryChild(elem, currentdir);
-	} else {
-		printk("No se puede crear el directorio '%s': Ya existe\n", argv[1]);
-	}
-	return 0;
-}
-
-int rm(int argc, char **argv) {
-	directory* elem = getDirectoryFromName(argv[1]);
-	if (elem == NULL) {
-		file* data = getFileFromName(argv[1]);
-		if (data != NULL) {
-			deleteFile(data);
-		} else {
-			return -1;
-		}
-	}
-	if (elem->parent == NULL) {
-		return -1;
-	}
-	deleteDirectory(elem);
-	return 0;
 }
 
 void readFile(file* elem, char* data) {

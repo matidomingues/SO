@@ -33,5 +33,14 @@ typedef struct directory {
 } directory;
 
 directory* getDirectoryFromName(char*);
+void updateSectorsOnDisk();
+void allocateDirectory(directory* elem);
+directory* createDirectory(char* arg);
+void updateDirectoryOnDisk(directory* parent);
+directory* createBaseDirectory();
+void addDirectoryChild(directory* elem, directory* parent);
+file* getFileFromName(char* name);
+void deleteFile(file* elem);
+void deleteDirectory(directory* elem);
 
 #endif

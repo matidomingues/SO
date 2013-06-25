@@ -14,7 +14,7 @@ int divz_main(int argc, char *argv[]);				// divz.c
 int chkdsk_main(int argc, char *argv[]);			// chkdsk.c
 int ls_main(int argc, char *argv[]);				// ls.c
 int mkdir_main(int argc, char *argv[]);				// mkdir.c
-int rm(int argc, char *argv[]);						// fs.c
+int rm_main(int argc, char *argv[]);				// rm.c
 int cat(int argc, char *argv[]);					// fs.c
 int cd_main(int argc, char *argv[]);				// cd.c
 int edit(int argc, char *argv[]);					// fs.c

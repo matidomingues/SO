@@ -22,7 +22,7 @@ cmdtab[] =
 	{	"mkdir",		mkdir_main },
 	{	"cat",			cat },
 	{	"cd",			cd_main },
-	{	"rm",			rm },
+	{	"rm",			rm_main },
 	{	"edit",			edit },
 	{	"printsectors",	print_sectors },
 	{	"format",		format_main },

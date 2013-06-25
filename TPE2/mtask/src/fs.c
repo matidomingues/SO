@@ -26,6 +26,7 @@ void initFileSystem() {
 	initSectors();
 	ata_write(ATA0, FILE_SYSTEM_VERSION, sizeof(FILE_SYSTEM_VERSION) + 1, 0, 0);
 	directory* root = createDirectory("root");
+	allocateDirectory(root);
 	currentdir = root;
 }
 
@@ -48,7 +49,6 @@ directory* loadDirectories(int sector, directory* parent) {
 	int num;
 	directory* elem = createBaseDirectory();
 	ata_read(ATA0, elem->name, NAME_LENGTH, sector, loc);
-	//printk("sector: %d name: %s\n", sector, elem->name);
 	loc += NAME_LENGTH;
 	elem->parent = parent;
 	elem->disksector = sector;

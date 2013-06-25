@@ -28,6 +28,7 @@ cmdtab[] =
 	{	"format",		format },
 	{	"touch",		touch },
 	{	"pwd",			pwd },
+	{	"cpuid",		detect_cpu },
 	{ }
 };
 

@@ -25,6 +25,7 @@ cmdtab[] =
 	{	"chkdsk",		chkdsk_main },
 	{	"write",		diskwrite_main },
 	{	"read",			diskread_main },
+	{	"ls",			ls },
 	{ }
 };
 

@@ -816,6 +816,9 @@ void mt_main(void) {
 	// Inicializar driver de teclado
 	mt_kbd_init();
 
+	// Inicializar el File System
+	createFS();
+
 	// Ejecutar primera tarea
 	while (true) {
 		cprintk(LIGHTCYAN, BLACK, "MTask inicializado.\n");

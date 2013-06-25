@@ -2,6 +2,7 @@
 #define FS_H
 
 #include "disk.h"
+#include "kernel.h"
 
 #define MAX_SECTORS 15000
 #define SECTOR_SIZE 512
@@ -27,7 +28,6 @@ typedef struct directory {
 	int disksector;
 } directory;
 
-directory* createFS();
 
 
 

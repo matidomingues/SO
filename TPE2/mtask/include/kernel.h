@@ -154,4 +154,9 @@ Task_t *mt_getfirst_time(void);
 
 void mt_setup_math(void);
 
+/* fs.c */
+
+void createFS(void);
+
+
 #endif

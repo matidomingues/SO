@@ -4,9 +4,10 @@ char sectors[MAX_SECTORS];
 
 directory* currentdir = NULL;
 
-directory* createFS() {
+void createFS() {
 	directory* root;
-	memcpy("root", root->name, sizeof("root")+1);
+	memcpy(root->name, "root", sizeof("root")+1);
+	
 	root->filecount = 0;
 	root->subdircount = 0;
 	root->parent = NULL;
@@ -15,8 +16,7 @@ directory* createFS() {
 		root->files[i] = NULL;
 		root->subdirectories[i] = NULL;
 	}
-	currentdir = NULL;
-	return root;
+	currentdir = root;
 }
 
 void initSectors() {
@@ -100,7 +100,7 @@ directory* getDirectoryFromName(char* name) {
 file* createFile(char* name, int size) {
 	file* elem;
 	int i, sector;
-	memcpy(name, elem->name, strlen(name) + 1);
+	memcpy(elem->name, name, strlen(name) + 1);
 	sector = getFileFreeSector((int) (size / 512) + 1);
 	for (i = 0; i < (int) (size / 512) + 1; i++) {
 		setSector(sector + i);
@@ -144,7 +144,7 @@ file* openFile(char* name) {
 	return elem;
 }
 
-void ls() {
+int ls() {
 	int i;
 	printk("Directory: %s\n", currentdir->name);
 	for (i = 0; i < MAX_DIRECTORIES; i++) {
@@ -157,6 +157,7 @@ void ls() {
 			printk("%s\n", currentdir->files[i]->name);
 		}
 	}
+	return 1;
 }
 
 void cd(char* arg) {
@@ -230,7 +231,7 @@ void deleteDirectory(directory* elem) {
 directory* createDirectory(char* name) {
 	directory* elem;
 	int i, sector;
-	memcpy(name, elem->name, strlen(name) + 1);
+	memcpy(elem->name, name, strlen(name) + 1);
 	sector = getFileFreeSector(1);
 	setSector(sector);
 	elem->parent = currentdir;

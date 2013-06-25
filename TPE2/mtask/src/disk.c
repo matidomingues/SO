@@ -86,6 +86,7 @@ void ata_write(int ata, char * msg, int bytes, unsigned short sector,
 		if (offset + bytes > SECTOR_SIZE) { // Fill sector
 			size = SECTOR_SIZE - offset;
 			_write(ata, ans, size, sector, offset);
+			wait(1);
 			sector++;
 			offset = 0;
 			bytes -= size;

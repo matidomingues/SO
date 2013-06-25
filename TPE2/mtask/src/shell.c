@@ -30,11 +30,11 @@ cmdtab[] =
 	{	"cat",			cat },
 	{	"cd",			cd },
 	{	"rm",			rm },
-	{	"edit",			edit },	
+	{	"edit",			edit },
 	{	"printsectors",	print_sectors },
 	{	"format",		format },
 	{	"touch",		touch },
-	{	"pwd",			pwd },		
+	{	"pwd",			pwd },
 	{ }
 };
 

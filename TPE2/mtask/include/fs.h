@@ -30,7 +30,4 @@ typedef struct directory {
 	int disksector;
 } directory;
 
-
-
-
 #endif

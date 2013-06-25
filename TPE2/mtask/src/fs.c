@@ -11,93 +11,99 @@ char sectors[MAX_SECTORS];
 directory* currentdir = NULL;
 
 void initSectors() {
+	//printk("Initializing sector array...\n");
 	int i;
 	for (i = 0; i < MAX_SECTORS; i++) {
 		sectors[i] = 0;
 	}
-	for(i = 0; i<(int)(MAX_SECTORS/512)+1; i++){
+	for (i = 0; i < (int) (MAX_SECTORS / 512) + 1; i++) {
 		sectors[FILETABLE_SECTOR_START + i] = 1;
 	}
 	updateSectorsOnDisk();
 }
 
-void initFileSystem(){
+void initFileSystem() {
 	initSectors();
-	ata_write(ATA0, FILE_SYSTEM_VERSION, sizeof(FILE_SYSTEM_VERSION)+1,0,0);
+	ata_write(ATA0, FILE_SYSTEM_VERSION, sizeof(FILE_SYSTEM_VERSION) + 1, 0, 0);
 	directory* root = createDirectory("root");
 	currentdir = root;
 }
 
-file* loadFile(int sector, directory* parent){
-	int loc=0, length = 0;
+file* loadFile(int sector, directory* parent) {
+	int loc = 0, length = 0;
 	file* elem = malloc(sizeof(file));
 	ata_read(ATA0, elem->name, NAME_LENGTH, sector, loc);
 
-	loc+=NAME_LENGTH;
+	loc += NAME_LENGTH;
 	elem->disksector = sector;
-	ata_read(ATA0, (char*)(&length), sizeof(int), sector, loc);
+	ata_read(ATA0, (char*) (&length), sizeof(int), sector, loc);
 	elem->size = length;
-	printk("name: %s, sector: %d, file size: %d\n", elem->name, elem->disksector, length);
+	printk("name: %s, sector: %d, file size: %d\n", elem->name,
+			elem->disksector, length);
 	return elem;
 }
 
-directory* loadDirectories(int sector, directory* parent){
+directory* loadDirectories(int sector, directory* parent) {
 	int finish, i, loc = 0;
 	int num;
 	directory* elem = createBaseDirectory();
-	ata_read(ATA0, elem->name, NAME_LENGTH, sector,loc);
-	printk("sector: %d name: %s\n", sector, elem->name);
-	loc+=NAME_LENGTH;
+	ata_read(ATA0, elem->name, NAME_LENGTH, sector, loc);
+	//printk("sector: %d name: %s\n", sector, elem->name);
+	loc += NAME_LENGTH;
 	elem->parent = parent;
 	elem->disksector = sector;
-	for(i=0, finish =0; i<10 && finish == 0; i++){
-		ata_read(ATA0, (char*)(&num), sizeof(int), sector, loc);
-		if(num == -1){
+	for (i = 0, finish = 0; (i < 10) && (finish == 0); i++) {
+		ata_read(ATA0, (char*) (&num), sizeof(int), sector, loc);
+		if (num == -1) {
 			finish = 1;
-		}else{
+		} else {
 			elem->files[elem->filecount++] = loadFile(num, elem);
 		}
-		loc+=sizeof(int);
+		loc += sizeof(int);
 	}
-	for(i=0, finish =0; i<MAX_DIRECTORIES && finish == 0; i++){
-	 	ata_read(ATA0, (char*)(&num), sizeof(int), sector, loc);
-	 	if(num == -1){
-	 		finish = 1;
-	 	}else{
-	 		elem->subdirectories[elem->subdircount++] = loadDirectories(num, elem);
-	 	}
-	 	loc+=sizeof(int);
+	for (i = 0, finish = 0; (i < MAX_DIRECTORIES) && (finish == 0); i++) {
+
+		ata_read(ATA0, (char*) (&num), sizeof(int), sector, loc);
+		if (num == -1) {
+			finish = 1;
+		} else {
+			elem->subdirectories[elem->subdircount++] = loadDirectories(num,
+					elem);
+		}
+		loc += sizeof(int);
 	}
 	return elem;
 }
 
-void loadFileSystem(){
+void loadFileSystem() {
 	int loc = FILETABLE_SECTOR_START;
 	ata_read(ATA0, sectors, sizeof(sectors), loc, 0);
-	loc += (int)(sizeof(sectors)/512)+1;
+	loc += (int) (sizeof(sectors) / 512) + 1;
 	currentdir = loadDirectories(loc, NULL);
 }
 
 void createFS() {
 	char* version_check = malloc(sizeof(FILE_SYSTEM_VERSION));
-	ata_read(ATA0, version_check, sizeof(FILE_SYSTEM_VERSION)+1, 0, 0); // Read on first segment to check if filesystem exists
-	if(strcmp(FILE_SYSTEM_VERSION, version_check) == 0){
+	ata_read(ATA0, version_check, sizeof(FILE_SYSTEM_VERSION) + 1, 0, 0); // Read on first segment to check if filesystem exists
+	if (strcmp(FILE_SYSTEM_VERSION, version_check) == 0) {
+		//printk("Loading file system...\n");
 		loadFileSystem();
-	}else{
+	} else {
+		//printk("Creating file system...\n");
 		initFileSystem();
 	}
 }
 
-void initFileName(file* elem){
+void initFileName(file* elem) {
 	int i;
-	for(i=0; i< NAME_LENGTH; i++){
+	for (i = 0; i < NAME_LENGTH; i++) {
 		elem->name[i] = 0;
 	}
 }
 
-void initDirectoryName(directory* elem){
+void initDirectoryName(directory* elem) {
 	int i;
-	for(i=0; i< NAME_LENGTH; i++){
+	for (i = 0; i < NAME_LENGTH; i++) {
 		elem->name[i] = 0;
 	}
 }
@@ -109,11 +115,11 @@ int getSector(int sector) {
 int getFileFreeSector(int ammount) {
 	int i, start, w;
 	for (i = FILETABLE_SECTOR_START; i < MAX_SECTORS; i++) {
-		if ((int)(getSector(i)) == 0) {
+		if ((int) (getSector(i)) == 0) {
 			start = i;
 			printk("entro con %d\n", i);
 			for (w = 0; w < ammount; w++) {
-				if ((int)(getSector(i + w)) != 0) {
+				if ((int) (getSector(i + w)) != 0) {
 					break;
 				}
 			}
@@ -179,13 +185,13 @@ file* createFile(char* name, int size) {
 	file* elem = malloc(sizeof(file));
 	int i, sector;
 	initFileName(elem);
-	memcpy(elem->name, name, strlen(name)+1);
+	memcpy(elem->name, name, strlen(name) + 1);
 	sector = getFileFreeSector((int) (size / 512) + 1);
 	printk("%d\n", sector);
 	for (i = 0; i < (int) (size / 512) + 1; i++) {
 		setSector(sector + i);
 	}
-	elem->disksector = sector;  
+	elem->disksector = sector;
 	elem->parent = currentdir;
 	elem->size = size;
 	return elem;
@@ -195,7 +201,8 @@ void allocateFile(file* elem) {
 	int loc = 0;
 	ata_write(ATA0, elem->name, NAME_LENGTH, elem->disksector, loc);
 	loc += sizeof(elem->name);
-	ata_write(ATA0, (char*)(&(elem->size)), sizeof(int), elem->disksector, loc);
+	ata_write(ATA0, (char*) (&(elem->size)), sizeof(int), elem->disksector,
+			loc);
 }
 
 void addChild(file* elem, directory* parent) {
@@ -222,8 +229,6 @@ void addDirectoryChild(directory* elem, directory* parent) {
 	updateDirectoryOnDisk(parent);
 }
 
-
-
 file* openFile(char* name) {
 	file* elem = getFileFromName(name);
 	if (elem == NULL) {
@@ -237,16 +242,26 @@ file* openFile(char* name) {
 
 int ls(int argc, char **argv) {
 	int i;
-	printk("Directory: %s\n", currentdir->name);
+//	cprintk(LIGHTBLUE, BLACK, "%s ", currentdir->name);
+	//printk("Directory: %s\n", currentdir->name);
+	char flag;
 	for (i = 0; i < MAX_DIRECTORIES; i++) {
+		flag = 1;
 		if (currentdir->subdirectories[i] != NULL) {
-			printk("%s\n", currentdir->subdirectories[i]->name);
+			cprintk(LIGHTBLUE, BLACK, "%s ",
+					currentdir->subdirectories[i]->name);
+			//printk("%s\n", currentdir->subdirectories[i]->name);
 		}
 	}
 	for (i = 0; i < MAX_FILES; i++) {
+		flag = 1;
 		if (currentdir->files[i] != NULL) {
-			printk("%s\n", currentdir->files[i]->name);
+			cprintk(LIGHTGREEN, BLACK, "%s ", currentdir->files[i]->name);
+			//printk("%s\n", currentdir->files[i]->name);
 		}
+	}
+	if (flag) {
+		printk("\n");
 	}
 	return 0;
 }
@@ -256,7 +271,7 @@ int cd(int argc, char **argv) {
 	if (strcmp(argv[1], "..") == 0) {
 		if (currentdir->parent != NULL) {
 			currentdir = currentdir->parent;
-		}else{
+		} else {
 			printk("Already on root\n");
 			return -1;
 		}
@@ -272,11 +287,12 @@ int cd(int argc, char **argv) {
 }
 
 void updateSectorsOnDisk() {
-	printk("sectors updated\n");
-	ata_write(ATA0, sectors, sizeof(sectors), FILETABLE_SECTOR_START, 0);
+	//printk("Updating sector array, size: %d...\n", sizeof(sectors));
+	ata_write(ATA0, sectors, sizeof(sectors) + 1, FILETABLE_SECTOR_START, 0);
+	//printk("Sectors array updated.\n");
 }
 
-void updateDirectoryOnDisk(directory* parent){
+void updateDirectoryOnDisk(directory* parent) {
 	allocateDirectory(parent);
 }
 
@@ -329,7 +345,7 @@ void deleteDirectory(directory* elem) {
 	updateSectorsOnDisk();
 }
 
-directory* createBaseDirectory(){
+directory* createBaseDirectory() {
 	int i;
 	directory* elem = malloc(sizeof(directory));
 	initDirectoryName(elem);
@@ -347,7 +363,7 @@ directory* createBaseDirectory(){
 directory* createDirectory(char* arg) {
 	int sector;
 	directory* elem = createBaseDirectory();
-	memcpy(elem->name, arg, strlen(arg)+1);
+	memcpy(elem->name, arg, strlen(arg) + 1);
 	printk("directory name: %s\n", elem->name);
 	sector = getFileFreeSector(1);
 	setSector(sector);
@@ -363,23 +379,23 @@ void allocateDirectory(directory* elem) {
 	loc += NAME_LENGTH;
 	for (i = 0; i < MAX_FILES; i++) {
 		if (elem->files[i] != NULL) {
-			ata_write(ATA0, (char*)(&(elem->files[i]->disksector)), sizeof(int), elem->disksector,
-					loc);
+			ata_write(ATA0, (char*) (&(elem->files[i]->disksector)),
+					sizeof(int), elem->disksector, loc);
 			loc += sizeof(int);
 		}
 	}
-	ata_write(ATA0, (char*)(&e), sizeof(int), elem->disksector, loc);
+	ata_write(ATA0, (char*) (&e), sizeof(int), elem->disksector, loc);
 	loc += sizeof(int);
 	for (i = 0; i < MAX_DIRECTORIES; i++) {
 		if (elem->subdirectories[i] != NULL) {
-			ata_write(ATA0, (char*)(&(elem->subdirectories[i]->disksector)), sizeof(int), elem->disksector,
-					loc);
+			ata_write(ATA0, (char*) (&(elem->subdirectories[i]->disksector)),
+					sizeof(int), elem->disksector, loc);
 			loc += sizeof(int);
 		}
 	}
-	ata_write(ATA0, (char*)(&e), sizeof(int), elem->disksector, loc);
+	ata_write(ATA0, (char*) (&e), sizeof(int), elem->disksector, loc);
 	loc += sizeof(int);
-	printk("wrote elem on segment: %d and loc: %d\n",elem->disksector, loc);
+	printk("wrote elem on segment: %d and loc: %d\n", elem->disksector, loc);
 
 }
 
@@ -429,10 +445,10 @@ int writeFile(file* file, char * buff, int size) {
 }
 
 int edit(int argc, char **argv) {
-	if(argc != 3){
+	if (argc != 3) {
 		return -1;
 	}
-	
+
 	file* data = openFile(argv[1]);
 
 	printk("Editing %s:\n", data->name);
@@ -454,19 +470,19 @@ int cat(int argc, char **argv) {
 	return 0;
 }
 
-int print_sectors(int argc, char **argv){
+int print_sectors(int argc, char **argv) {
 	int i;
-	for(i=0; i<500; i++){
+	for (i = 0; i < 500; i++) {
 		printk("%d", getSector(i));
 	}
 	printk("\n");
 	return 0;
 }
 
-int format(int argc, char **argv){
+int format(int argc, char **argv) {
 	char clean[512];
 	int i;
-	for(i=0; i<512; i++){
+	for (i = 0; i < 512; i++) {
 		clean[i] = '\0';
 	}
 	ata_write(ATA0, clean, 512, 0, 0);
@@ -474,20 +490,20 @@ int format(int argc, char **argv){
 
 }
 
-int touch(int argc, char **argv){
+int touch(int argc, char **argv) {
 	openFile(argv[1]);
 	return 0;
 }
 
-void printnode(directory* elem){
-	if(elem == NULL){
+void printnode(directory* elem) {
+	if (elem == NULL) {
 		return;
 	}
 	printnode(elem->parent);
 	printk("/%s", elem->name);
 }
 
-int pwd(int argc, char **argv){
+int pwd(int argc, char **argv) {
 	printnode(currentdir);
 	printk("\n");
 	return 0;

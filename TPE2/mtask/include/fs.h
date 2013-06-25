@@ -9,8 +9,9 @@
 #define MAX_FILES 20
 #define MAX_DIRECTORIES 20
 #define DEFAULT_FILESIZE 512
-#define FILETABLE_SECTOR_START 10
+#define FILETABLE_SECTOR_START 1
 #define NAME_LENGTH 64
+#define FILE_SYSTEM_VERSION "TP-SO-FILESYSTEM-0.1"
 
 typedef struct file {
 	char name[NAME_LENGTH];

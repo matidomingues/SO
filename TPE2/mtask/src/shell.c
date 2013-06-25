@@ -30,6 +30,9 @@ cmdtab[] =
 	{	"cat",			cat },
 	{	"cd",			cd },
 	{	"rm",			rm },
+	{	"edit",			edit },	
+	{	"printsectors",	print_sectors },
+	{	"format",		format },	
 	{ }
 };
 

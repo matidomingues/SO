@@ -1,6 +1,6 @@
 #include "fs.h"
 
-int rm(int argc, char **argv) {
+int rm_main(int argc, char **argv) {
 	directory* elem = getDirectoryFromName(argv[1]);
 	if (elem == NULL) {
 		file* data = getFileFromName(argv[1]);

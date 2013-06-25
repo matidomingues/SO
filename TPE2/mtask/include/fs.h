@@ -42,5 +42,7 @@ void addDirectoryChild(directory* elem, directory* parent);
 file* getFileFromName(char* name);
 void deleteFile(file* elem);
 void deleteDirectory(directory* elem);
+void printnode(directory* elem);
+file* openFile(char* name);
 
 #endif

@@ -7,7 +7,7 @@ MODULES = kstart libasm interrupts kernel gdt_idt irq string sprintf malloc \
 			cons io timer queue math sem mutex monitor pipe msgqueue rand \
 			filo sfilo xfilo keyboard printk getline shell split setkb camino \
 			camino_ns atoi prodcons afilo divz disk chkdsk ls fs cd cpuid \
-			mkdir rm
+			mkdir rm touch format pwd
 
 OBJECTS = $(MODULES:%=obj/%.o)
 mtask: $(OBJECTS)

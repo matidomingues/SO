@@ -369,7 +369,7 @@ int edit(int argc, char **argv) {
 
 	file* data = openFile(argv[1]);
 
-	printk("Editing %s:\n", data->name);
+	printk("Editando %s:\n", data->name);
 
 	writeFile(data, argv[2], strlen(argv[2]));
 	return 0;
@@ -397,22 +397,6 @@ int print_sectors(int argc, char **argv) {
 	return 0;
 }
 
-int format(int argc, char **argv) {
-	char clean[512];
-	int i;
-	for (i = 0; i < 512; i++) {
-		clean[i] = '\0';
-	}
-	ata_write(ATA0, clean, 512, 0, 0);
-	return 0;
-
-}
-
-int touch(int argc, char **argv) {
-	openFile(argv[1]);
-	return 0;
-}
-
 void printnode(directory* elem) {
 	if (elem == NULL) {
 		return;
@@ -420,11 +404,3 @@ void printnode(directory* elem) {
 	printnode(elem->parent);
 	printk("/%s", elem->name);
 }
-
-int pwd(int argc, char **argv) {
-	printnode(currentdir);
-	printk("\n");
-	return 0;
-
-}
-

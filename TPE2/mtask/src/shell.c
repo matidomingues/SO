@@ -32,7 +32,9 @@ cmdtab[] =
 	{	"rm",			rm },
 	{	"edit",			edit },	
 	{	"printsectors",	print_sectors },
-	{	"format",		format },	
+	{	"format",		format },
+	{	"touch",		touch },
+	{	"pwd",			pwd },		
 	{ }
 };
 

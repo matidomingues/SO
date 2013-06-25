@@ -230,6 +230,7 @@ file* openFile(char* name) {
 		elem = createFile(name, DEFAULT_FILESIZE);
 		allocateFile(elem);
 		addChild(elem, currentdir);
+		updateSectorsOnDisk();
 	}
 	return elem;
 }
@@ -271,6 +272,7 @@ int cd(int argc, char **argv) {
 }
 
 void updateSectorsOnDisk() {
+	printk("sectors updated\n");
 	ata_write(ATA0, sectors, sizeof(sectors), FILETABLE_SECTOR_START, 0);
 }
 
@@ -324,6 +326,7 @@ void deleteDirectory(directory* elem) {
 	}
 	killChild(elem, elem->parent);
 	clearSector(elem->disksector, 1);
+	updateSectorsOnDisk();
 }
 
 directory* createBaseDirectory(){
@@ -348,6 +351,7 @@ directory* createDirectory(char* arg) {
 	printk("directory name: %s\n", elem->name);
 	sector = getFileFreeSector(1);
 	setSector(sector);
+	updateSectorsOnDisk();
 	elem->parent = currentdir;
 	elem->disksector = sector;
 	return elem;
@@ -469,3 +473,24 @@ int format(int argc, char **argv){
 	return 0;
 
 }
+
+int touch(int argc, char **argv){
+	openFile(argv[1]);
+	return 0;
+}
+
+void printnode(directory* elem){
+	if(elem == NULL){
+		return;
+	}
+	printnode(elem->parent);
+	printk("/%s", elem->name);
+}
+
+int pwd(int argc, char **argv){
+	printnode(currentdir);
+	printk("\n");
+	return 0;
+
+}
+

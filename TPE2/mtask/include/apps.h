@@ -21,5 +21,7 @@ int cat(int argc, char **argv);						// fs.c
 int cd(int argc, char **argv);						// fs.c
 int edit(int argc, char **argv);					// fs.c 
 int print_sectors(int argc, char **argv);			// fs.c
-int format(int argc, char **argv);					// fs.c	
+int format(int argc, char **argv);					// fs.c
+int touch(int argc, char **argv);					// fs.c
+int pwd(int argc, char **argv);						// fs.c	
 #endif

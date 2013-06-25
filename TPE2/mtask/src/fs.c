@@ -355,13 +355,13 @@ void allocateDirectory(directory* elem) {
 
 int mkdir(int argc, char **argv) {
 	directory* elem = getDirectoryFromName(argv[1]);
-	if (elem != NULL) {
-		printk("directory already exists\n");
-		return -1;
+	if (elem == NULL) {
+		elem = createDirectory(argv[1]);
+		allocateDirectory(elem);
+		addDirectoryChild(elem, currentdir);
+	} else {
+		printk("No se puede crear el directorio '%s': Ya existe\n", argv[1]);
 	}
-	elem = createDirectory(argv[1]);
-	allocateDirectory(elem);
-	addDirectoryChild(elem, currentdir);
 	return 0;
 }
 

@@ -5,9 +5,9 @@ char sectors[MAX_SECTORS];
 directory* currentdir = NULL;
 
 void createFS() {
-	directory* root;
+	directory* root = malloc(sizeof(directory));
 	memcpy(root->name, "root", sizeof("root")+1);
-	
+
 	root->filecount = 0;
 	root->subdircount = 0;
 	root->parent = NULL;
@@ -17,6 +17,20 @@ void createFS() {
 		root->subdirectories[i] = NULL;
 	}
 	currentdir = root;
+}
+
+void initFileName(file* elem){
+	int i;
+	for(i=0; i< NAME_LENGTH; i++){
+		elem->name[i] = 0;
+	}
+}
+
+void initDirectoryName(directory* elem){
+	int i;
+	for(i=0; i< NAME_LENGTH; i++){
+		elem->name[i] = 0;
+	}
 }
 
 void initSectors() {
@@ -100,12 +114,13 @@ directory* getDirectoryFromName(char* name) {
 file* createFile(char* name, int size) {
 	file* elem;
 	int i, sector;
-	memcpy(elem->name, name, strlen(name) + 1);
+	initFileName(elem);
+	strcpy(elem->name, name);
 	sector = getFileFreeSector((int) (size / 512) + 1);
 	for (i = 0; i < (int) (size / 512) + 1; i++) {
 		setSector(sector + i);
 	}
-	elem->disksector = sector;
+	elem->disksector = sector;  
 	elem->parent = currentdir;
 	elem->size = size;
 	return elem;
@@ -131,9 +146,23 @@ void addChild(file* elem, directory* parent) {
 	for (i = 0; i < MAX_FILES; i++) {
 		if (parent->files[i] == NULL) {
 			parent->files[i] = elem;
+			return;
 		}
 	}
 }
+
+void addDirectoryChild(directory* elem, directory* parent) {
+	int i = 0;
+	parent->subdircount += 1;
+	for (i = 0; i < MAX_DIRECTORIES; i++) {
+		if (parent->subdirectories[i] == NULL) {
+			parent->subdirectories[i] = elem;
+			return;
+		}
+	}
+}
+
+
 
 file* openFile(char* name) {
 	file* elem = getFileFromName(name);
@@ -144,7 +173,7 @@ file* openFile(char* name) {
 	return elem;
 }
 
-int ls() {
+int ls(int argc, char **argv) {
 	int i;
 	printk("Directory: %s\n", currentdir->name);
 	for (i = 0; i < MAX_DIRECTORIES; i++) {
@@ -160,19 +189,24 @@ int ls() {
 	return 1;
 }
 
-void cd(char* arg) {
+int cd(int argc, char **argv) {
 	directory* elem;
-	if (strcmp(arg, "..") == 0) {
+	if (strcmp(argv[1], "..") == 0) {
 		if (currentdir->parent != NULL) {
 			currentdir = currentdir->parent;
+		}else{
+			printk("Already on root\n");
+			return -1;
 		}
 	} else {
-		if ((elem = getDirectoryFromName(arg)) != NULL) {
+		if ((elem = getDirectoryFromName(argv[1])) != NULL) {
 			currentdir = elem;
 		} else {
 			printk("Not a directory");
+			return -1;
 		}
 	}
+	return 1;
 }
 
 void updateSectorsOnDisk() {
@@ -228,10 +262,12 @@ void deleteDirectory(directory* elem) {
 	clearSector(elem->disksector, 1);
 }
 
-directory* createDirectory(char* name) {
-	directory* elem;
+directory* createDirectory(char* arg) {
+	directory* elem = malloc(sizeof(directory));
 	int i, sector;
-	memcpy(elem->name, name, strlen(name) + 1);
+	initDirectoryName(elem);
+	memcpy(elem->name, arg, strlen(arg)+1);
+	printk("directory name: %s\n", elem->name);
 	sector = getFileFreeSector(1);
 	setSector(sector);
 	elem->parent = currentdir;
@@ -278,20 +314,22 @@ void allocateDirectory(directory* elem) {
 
 }
 
-void mkdir(char* arg) {
-	directory* elem = getDirectoryFromName(arg);
+int mkdir(int argc, char **argv) {
+	directory* elem = getDirectoryFromName(argv[1]);
 	if (elem != NULL) {
-		printk("directory* already exists\n");
-		return;
+		printk("directory already exists\n");
+		return -1;
 	}
-	elem = createDirectory(arg);
+	elem = createDirectory(argv[1]);
 	allocateDirectory(elem);
+	addDirectoryChild(elem, currentdir);
+	return 1;
 }
 
-int rm(char* arg) {
-	directory* elem = getDirectoryFromName(arg);
+int rm(int argc, char **argv) {
+	directory* elem = getDirectoryFromName(argv[1]);
 	if (elem == NULL) {
-		file* data = getFileFromName(arg);
+		file* data = getFileFromName(argv[1]);
 		if (data != NULL) {
 			deleteFile(data);
 		} else {
@@ -321,20 +359,21 @@ int writeFile(file* file, char * buff, int size) {
 	return 0;
 }
 
-int edit(char * arg, char* string) {
-	openFile(arg);
-	file* data = getFileFromName(arg);
-	if (data == NULL) {
+int edit(int argc, char **argv) {
+	if(argc != 3){
 		return -1;
 	}
+	
+	file* data = openFile(argv[1]);
+
 	printk("Editing %s:\n", data->name);
 
-	writeFile(data, string, strlen(string));
+	writeFile(data, argv[2], strlen(argv[2]));
 	return 1;
 }
 
-int cat(char * arg) {
-	file* data = getFileFromName(arg);
+int cat(int argc, char **argv) {
+	file* data = getFileFromName(argv[1]);
 	if (data == NULL) {
 		return -1;
 	}
@@ -343,5 +382,5 @@ int cat(char * arg) {
 	readFile(data, tmp);
 	printk("file* %s:\n", data->name);
 	printk("%s\nEOF\n", tmp);
-	return 0;
+	return 1;
 }

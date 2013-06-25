@@ -10,16 +10,17 @@
 #define MAX_DIRECTORIES 20
 #define DEFAULT_FILESIZE 512
 #define FILETABLE_SECTOR_START 10
+#define NAME_LENGTH 64
 
 typedef struct file {
-	char name[128];
+	char name[NAME_LENGTH];
 	int disksector;
 	int size;
 	struct directory* parent;
 } file;
 
 typedef struct directory {
-	char name[64];
+	char name[NAME_LENGTH];
 	int filecount;
 	int subdircount;
 	struct directory * parent;

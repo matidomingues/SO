@@ -26,6 +26,10 @@ cmdtab[] =
 	{	"write",		diskwrite_main },
 	{	"read",			diskread_main },
 	{	"ls",			ls },
+	{	"mkdir",		mkdir },
+	{	"cat",			cat },
+	{	"cd",			cd },
+	{	"rm",			rm },
 	{ }
 };
 

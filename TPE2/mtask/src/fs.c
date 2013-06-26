@@ -181,7 +181,7 @@ file* createFile(char* name, int size) {
 	initFileName(elem);
 	memcpy(elem->name, name, strlen(name) + 1);
 	sector = getFileFreeSector((int) (size / 512) + 1);
-	printk("%d\n", sector);
+	//printk("%d\n", sector);
 	for (i = 0; i < (int) (size / 512) + 1; i++) {
 		setSector(sector + i);
 	}

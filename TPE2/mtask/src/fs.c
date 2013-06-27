@@ -3,6 +3,7 @@
 char sectors[MAX_SECTORS];
 
 directory* currentdir = NULL;
+void deleteFile(file* elem);
 
 void initSectors() {
 	//printk("Initializing sector array...\n");
@@ -223,13 +224,24 @@ void addDirectoryChild(directory* elem, directory* parent) {
 	updateDirectoryOnDisk(parent);
 }
 
-file* openFile(char* name) {
+int getFileRoundSize(int size){
+	int start = 0;
+	while(start <= size){
+		start+=512;
+	}
+	return start;
+}
+
+file* openFile(char* name, int size) {
 	file* elem = getFileFromName(name);
 	if (elem == NULL) {
-		elem = createFile(name, DEFAULT_FILESIZE);
+		elem = createFile(name, getFileRoundSize(size));
 		allocateFile(elem);
 		addChild(elem, currentdir);
 		updateSectorsOnDisk();
+	}else if(elem->size < size){
+		deleteFile(elem);
+		elem = openFile(name, size);
 	}
 	return elem;
 }
@@ -367,7 +379,8 @@ int edit(int argc, char **argv) {
 		return -1;
 	}
 
-	file* data = openFile(argv[1]);
+	file* data = openFile(argv[1], sizeof(argv[2]));
+
 
 	printk("Editando %s:\n", data->name);
 

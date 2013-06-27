@@ -3,7 +3,6 @@
 char sectors[MAX_SECTORS];
 
 directory* currentdir = NULL;
-void deleteFile(file* elem);
 
 void initSectors() {
 	//printk("Initializing sector array...\n");
@@ -243,6 +242,7 @@ file* openFile(char* name, int size) {
 		deleteFile(elem);
 		elem = openFile(name, size);
 	}
+	updateSectorsOnDisk();
 	return elem;
 }
 
